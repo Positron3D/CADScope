@@ -1,48 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CADScope</title>
+  <!-- Inter font from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="viewer.css">
 </head>
 <body>
-  <div id="sidebar">
-    <div id="sidebar-header">
-      <h3>CADScope</h3>
-      <button id="darkModeToggle" title="Toggle dark mode">&#9790;</button>
-    </div>
-    <select id="modelSelect" onchange="loadModel(this.value)">
-      <option value="/models/Positron_v3.2.2.glb">Positron v3.2.2</option>
-      <option value="/models/Voron_0.2r1.glb">Voron 0.2r1</option>
-      <option value="/models/Voron_2.4r2.glb">Voron 2.4r2</option>
-      <option value="/models/Voron_Switchwire.glb">Voron Switchwire</option>
-    </select>
-    <button id="copyLinkBtn">Copy Link</button>
-    <div id="colorControls" style="display:none"></div>
-    <div id="tree"></div>
-  </div>
-  <div id="sidebar-footer"><a href="https://github.com/erikbuild/CADScope" target="_blank">CADScope v1.0.0</a> is made by <a href="https://github.com/erikbuild" target="_blank">@erikbuild</a></div>
-  <div id="viewControls">
-    <button class="view-btn" onclick="setView('left')">Left<br>◀</button>
-    <button class="view-btn" onclick="setView('right')">Right<br>▶</button>
-    <button class="view-btn" onclick="setView('home')">Home<br>⌂</button>
-    <button class="view-btn" onclick="setView('top')">Top<br>▲</button>
-    <button class="view-btn" onclick="setView('front')">Front<br>◉</button>
-    <button class="view-btn" onclick="setView('iso')">Iso<br>◇</button>
-    <button class="view-btn" onclick="setView('bottom')">Bottom<br>▼</button>
-    <button class="view-btn" onclick="setView('back')">Back<br>◈</button>
+  <div id="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <h1>CADScope</h1>
+      </div>
+      <div class="header-links">
+        <a href="https://github.com/erikbuild/CADScope" target="_blank">GitHub</a>
+      </div>
+    </header>
 
-    <hr>
-    
-    <button class="view-btn" onclick="zoom(0.2)">Zoom -</button>
-    <button class="view-btn" onclick="resetZoom()">Reset</button>
-    <button class="view-btn" onclick="zoom(-0.2)">Zoom +</button>
+    <main class="main-content">
+      <!-- Config Panel (Sidebar) -->
+      <aside class="config-panel">
+        <div class="config-panel-content">
+          <section class="config-section">
+            <h3>Assembly</h3>
+            <select id="modelSelect"></select>
+          </section>
+
+          <section class="config-section">
+            <button class="btn-secondary" id="copyLinkBtn">Copy Configuration URL</button>
+          </section>
+
+          <div id="colorControls" style="display:none"></div>
+
+          <section class="config-section">
+            <h3>Scene Hierarchy</h3>
+            <div id="tree"></div>
+          </section>
+        </div>
+      </aside>
+
+      <!-- 3D Viewer -->
+      <div class="viewer-container">
+        <canvas id="viewer"></canvas>
+
+        <!-- Viewer Controls -->
+        <div id="viewControls">
+          <button class="viewer-btn" onclick="setView('left')" title="Left">◀<br>Left</button>
+          <button class="viewer-btn" onclick="setView('right')" title="Right">▶<br>Right</button>
+          <button class="viewer-btn" onclick="setView('home')" title="Home">⌂<br>Home</button>
+          <button class="viewer-btn" onclick="setView('top')" title="Top">▲<br>Top</button>
+          <button class="viewer-btn" onclick="setView('front')" title="Front">◉<br>Front</button>
+          <button class="viewer-btn" onclick="setView('iso')" title="Iso">◇<br>Iso</button>
+          <button class="viewer-btn" onclick="setView('bottom')" title="Bottom">▼<br>Bottom</button>
+          <button class="viewer-btn" onclick="setView('back')" title="Back">◈<br>Back</button>
+          <div class="viewer-btn-separator"></div>
+          <button class="viewer-btn" onclick="zoom(0.2)" title="Zoom Out">−<br>Zoom</button>
+          <button class="viewer-btn" onclick="resetZoom()" title="Reset Zoom">⟳<br>Reset</button>
+          <button class="viewer-btn" onclick="zoom(-0.2)" title="Zoom In">+<br>Zoom</button>
+          <div class="viewer-btn-separator"></div>
+          <label class="slider-label" for="brightnessSlider">Brightness</label>
+          <input type="range" id="brightnessSlider" min="0" max="200" value="150" title="Brightness">
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading-indicator" id="loadingOverlay">
+          <div class="spinner-small"></div>
+          <span id="loadingText">Loading model...</span>
+        </div>
+
+        <!-- Attribution -->
+        <div class="attribution">
+          <a href="https://github.com/erikbuild/CADScope" target="_blank">CADScope v1.1.0</a> by <a href="https://github.com/erikbuild" target="_blank">@erikbuild</a>
+        </div>
+      </div>
+    </main>
   </div>
-  <div id="loadingOverlay">
-    <div class="spinner"></div>
-    <p id="loadingText">Loading model...</p>
-  </div>
-  <canvas id="viewer"></canvas>
 
   <script type="importmap">
   {

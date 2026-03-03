@@ -107,6 +107,14 @@ python3 model_converter/extract_step_colors.py input.step /tmp/colors.json
 
 ### Future Possibilities...
 
-- Would be cool to be able to select an item in the hierarchy and have it highlighted in the render
 - Save color configs/combinations?
 - MOAR LIGHTING in scene!
+    - Brightness control?
+- Identify situations like "M3_Roll-in_T-Nut" / "M3_Roll-in_T-Nut_(1)" and simplify the labels.
+- Would be cool to be able to select an item in the hierarchy and have it highlighted in the render
+- Colors: Panels!
+
+
+### Credits
+
+The general look and feel was shamelessly copied, with love, from the VERY GOOD [A4T Configurator](https://a4t.dwtas.net/) for the [A4T from Armchair Heavy Industries](https://github.com/Armchair-Heavy-Industries/A4T).

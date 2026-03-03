@@ -1,7 +1,10 @@
+// ABOUTME: Core viewer application for the CADScope 3D assembly viewer.
+// ABOUTME: Handles Three.js scene, model loading, color sets, scene tree, and camera controls.
 import * as THREE from 'https://unpkg.com/three@0.161.0/build/three.module.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.161.0/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.161.0/examples/jsm/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'https://unpkg.com/three@0.161.0/examples/jsm/loaders/DRACOLoader.js';
+import { models } from './models.js';
 
 const canvas = document.getElementById('viewer');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
@@ -9,21 +12,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(canvas.clientWidth, canvas.clientHeight);
 
 const scene = new THREE.Scene();
-
-// Dark mode
-const LIGHT_BG = 0xFFFFFF;
-const DARK_BG = 0x1a1a1a;
-const isDark = localStorage.getItem('darkMode') !== 'false';
-if (isDark) document.body.classList.add('dark');
-scene.background = new THREE.Color(isDark ? DARK_BG : LIGHT_BG);
-
-document.getElementById('darkModeToggle').addEventListener('click', () => {
-  const dark = document.body.classList.toggle('dark');
-  localStorage.setItem('darkMode', dark);
-  scene.background.set(dark ? DARK_BG : LIGHT_BG);
-  document.getElementById('darkModeToggle').innerHTML = dark ? '&#9788;' : '&#9790;';
-});
-document.getElementById('darkModeToggle').innerHTML = isDark ? '&#9788;' : '&#9790;';
+scene.background = new THREE.Color(0x0a0c10);
 
 const camera = new THREE.PerspectiveCamera(45, canvas.clientWidth / canvas.clientHeight, 0.1, 1000);
 camera.position.set(2, 2, 2);
@@ -35,13 +24,25 @@ controls.enableDamping = true;
 let modelCenter = new THREE.Vector3();
 let modelSize = 1;
 
-const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, 0.75);
+const BASE_BRIGHTNESS = 0.75;
+const DEFAULT_BRIGHTNESS_SCALE = 1.5;
+const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, BASE_BRIGHTNESS * DEFAULT_BRIGHTNESS_SCALE);
 scene.add(hemi);
-const dir = new THREE.DirectionalLight(0xffffff, 0.75);
+const dir = new THREE.DirectionalLight(0xffffff, BASE_BRIGHTNESS * DEFAULT_BRIGHTNESS_SCALE);
 dir.position.set(5, 10, 7);
 scene.add(dir);
-//const ambient = new THREE.AmbientLight(0xffffff, 0.3);
-//scene.add(ambient);
+
+// Brightness control scales all lights relative to their base intensities
+const baseLightIntensities = [
+  { light: hemi, base: BASE_BRIGHTNESS },
+  { light: dir, base: BASE_BRIGHTNESS }
+];
+document.getElementById('brightnessSlider').addEventListener('input', (e) => {
+  const scale = e.target.value / 100;
+  for (const { light, base } of baseLightIntensities) {
+    light.intensity = base * scale;
+  }
+});
 
 // Draco loader for compressed geometry
 const dracoLoader = new DRACOLoader();
@@ -52,19 +53,39 @@ const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
 
 let currentModel = null;
+let currentEntry = null;
 // Per-category state: category name -> array of meshes / color picker input
 const categoryMeshes = new Map();
 const categoryPickers = new Map();
 
-// URL query string support
-function modelStem(path) {
-  return path.split('/').pop().replace(/\.glb$/, '');
+// Populate model select from manifest
+const modelSelect = document.getElementById('modelSelect');
+const githubLink = document.querySelector('.header-links a');
+models.forEach((entry, i) => {
+  const opt = document.createElement('option');
+  opt.value = entry.id;
+  opt.textContent = entry.name;
+  modelSelect.appendChild(opt);
+});
+
+function findModel(id) {
+  return models.find(m => m.id === id) || models[0];
 }
 
+function updateGithubLink(entry) {
+  if (entry.github) {
+    githubLink.href = entry.github;
+    githubLink.textContent = entry.github_text || 'GitHub';
+    githubLink.style.display = '';
+  } else {
+    githubLink.style.display = 'none';
+  }
+}
+
+// URL query string support
 function updateURL() {
   const params = new URLSearchParams();
-  const path = document.getElementById('modelSelect').value;
-  params.set('model', modelStem(path));
+  params.set('model', currentEntry ? currentEntry.id : models[0].id);
   if (document.getElementById('colorControls').style.display !== 'none') {
     for (const [name, picker] of categoryPickers) {
       if (name !== 'model') {
@@ -77,14 +98,8 @@ function updateURL() {
 
 const urlParams = new URLSearchParams(window.location.search);
 const urlModel = urlParams.get('model');
-if (urlModel) {
-  const select = document.getElementById('modelSelect');
-  for (const opt of select.options) {
-    if (modelStem(opt.value) === urlModel) {
-      select.value = opt.value;
-      break;
-    }
-  }
+if (urlModel && models.some(m => m.id === urlModel)) {
+  modelSelect.value = urlModel;
 }
 // URL color overrides are consumed once on initial load, then cleared
 let urlColorsConsumed = false;
@@ -148,9 +163,14 @@ function applyColorSet(colorSet, model) {
   });
 }
 
-function loadColorSet(path, model) {
-  const colorPath = path.replace(/\.glb$/, '.colors.json');
+function loadColorSet(entry, model) {
   const colorControls = document.getElementById('colorControls');
+  if (!entry.colors) {
+    colorControls.style.display = 'none';
+    updateURL();
+    return;
+  }
+  const colorPath = entry.colors;
 
   fetch(colorPath).then((res) => {
     if (!res.ok) {
@@ -167,6 +187,9 @@ function loadColorSet(path, model) {
     // Build color picker UI dynamically from categories
     colorControls.innerHTML = '';
     categoryPickers.clear();
+    const heading = document.createElement('h3');
+    heading.textContent = 'Colors';
+    colorControls.appendChild(heading);
     for (const [name, cat] of Object.entries(colorSet.categories)) {
       const row = document.createElement('div');
       row.className = 'color-row';
@@ -210,26 +233,28 @@ function loadColorSet(path, model) {
   });
 }
 
-function loadModel(path) {
+function loadModel(id) {
+  const entry = findModel(id);
+  currentEntry = entry;
+
   // Remove previous model
   if (currentModel) {
     scene.remove(currentModel);
   }
 
+  // Update header GitHub link for this model's project
+  updateGithubLink(entry);
+
   // Hide color controls while loading
   document.getElementById('colorControls').style.display = 'none';
 
-  // Show loading overlay
-  let overlay = document.getElementById('loadingOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'loadingOverlay';
-    overlay.innerHTML = '<div class="spinner"></div><p id="loadingText">Loading model...</p>';
-    document.body.appendChild(overlay);
-  }
-  document.getElementById('loadingText').textContent = 'Loading model...';
+  // Show loading indicator
+  const overlay = document.getElementById('loadingOverlay');
+  const loadingText = document.getElementById('loadingText');
+  overlay.classList.remove('hidden');
+  loadingText.textContent = 'Loading model...';
 
-  gltfLoader.load(path, (gltf) => {
+  gltfLoader.load(entry.model, (gltf) => {
     currentModel = gltf.scene;
     scene.add(currentModel);
 
@@ -242,23 +267,26 @@ function loadModel(path) {
     camera.updateProjectionMatrix();
 
     buildTree(currentModel);
-    loadColorSet(path, currentModel);
-    document.getElementById('loadingOverlay').remove();
+    loadColorSet(entry, currentModel);
+    overlay.classList.add('hidden');
   }, (progress) => {
     if (progress.total) {
       const pct = (progress.loaded / progress.total * 100).toFixed(0);
-      document.getElementById('loadingText').textContent = `Loading model... ${pct}%`;
+      loadingText.textContent = `Loading model... ${pct}%`;
     }
   }, (error) => {
     console.error('Error loading model:', error);
-    document.getElementById('loadingText').textContent = 'Failed to load model.';
+    loadingText.textContent = 'Failed to load model.';
   });
 }
 
 window.loadModel = loadModel;
 
+// Model selector
+modelSelect.addEventListener('change', () => loadModel(modelSelect.value));
+
 // Load the initially selected model
-loadModel(document.getElementById('modelSelect').value);
+loadModel(modelSelect.value);
 
 function buildTree(sceneRoot) {
   const treeContainer = document.getElementById('tree');

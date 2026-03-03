@@ -1,224 +1,381 @@
+/* ABOUTME: Styles for the CADScope 3D assembly viewer. */
+
 :root {
-  --bg-primary: rgba(255, 255, 255, 0.95);
-  --bg-secondary: #fff;
-  --text-primary: #000;
-  --text-secondary: #888;
-  --text-muted: #555;
-  --text-disabled: #999;
-  --border-color: #ccc;
-  --border-light: #eee;
-  --border-strong: #333;
-  --hover-bg: rgba(0, 0, 0, 0.05);
-  --btn-bg: white;
-  --btn-border: #666;
-  --btn-hover: #f0f0f0;
-  --btn-active: #e0e0e0;
-  --loading-bg: rgba(255, 255, 255, 0.9);
-  --spinner-border: #ccc;
-  --spinner-top: #333;
-  --toggle-color: #666;
+  /* Backgrounds */
+  --bg-primary: #0a0c10;
+  --bg-secondary: #0f1318;
+  --bg-panel: #1c2128;
+  --bg-tertiary: #161b22;
+
+  /* Accent colors */
+  --accent: #4a6fa5;
+  --accent-hover: #6989b9;
+  --accent-light: #7ea3cc;
+
+  /* Text */
+  --text-primary: #f0f3f6;
+  --text-secondary: #9aa5b1;
+  --text-muted: #6b7785;
+
+  /* Borders */
+  --border-color: #2d333b;
+  --border-light: #444c56;
+
+  /* Status */
+  --success: #3fb950;
+  --warning: #d29922;
+  --error: #ef4444;
 }
 
-body.dark {
-  --bg-primary: rgba(30, 30, 30, 0.95);
-  --bg-secondary: #1e1e1e;
-  --text-primary: #e0e0e0;
-  --text-secondary: #aaa;
-  --text-muted: #bbb;
-  --text-disabled: #666;
-  --border-color: #444;
-  --border-light: #333;
-  --border-strong: #666;
-  --hover-bg: rgba(255, 255, 255, 0.08);
-  --btn-bg: #2a2a2a;
-  --btn-border: #555;
-  --btn-hover: #333;
-  --btn-active: #444;
-  --loading-bg: rgba(30, 30, 30, 0.9);
-  --spinner-border: #555;
-  --spinner-top: #ccc;
-  --toggle-color: #aaa;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
   overflow: hidden;
-  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-#viewer {
-  position: absolute;
-  left: 300px;
-  top: 0;
-  width: calc(100% - 300px);
-  height: 100vh;
-}
-
-#sidebar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 300px;
-  height: 100vh;
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-color);
-  overflow-y: auto;
-  padding: 10px;
-  padding-bottom: 40px;
-  box-sizing: border-box;
-}
-
-#sidebar-footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 300px;
-  padding: 8px 10px;
-  box-sizing: border-box;
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-color);
-  border-top: 1px solid var(--border-light);
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-#sidebar-footer a {
-  color: var(--text-muted);
-  text-decoration: none;
-}
-
-#sidebar-footer a:hover {
-  text-decoration: underline;
-}
-
-#sidebar-header {
+#app {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Header */
+.header {
+  display: flex;
   justify-content: space-between;
-  margin: 0 0 10px 0;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--border-strong);
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
 }
 
-#sidebar-header h3 {
-  margin: 0;
+.logo h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent);
 }
 
-#darkModeToggle {
-  background: none;
+.header-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.header-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.header-links a:hover {
+  color: var(--accent);
+}
+
+/* Main Content */
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Config Panel (Sidebar) */
+.config-panel {
+  width: 400px;
+  min-width: 280px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border-color);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.config-panel-content {
+  flex: 1;
+  overflow-y: scroll;
+  padding: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom scrollbar */
+.config-panel-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.config-panel-content::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.config-panel-content::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.config-panel-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+.config-panel h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.config-section {
+  margin-bottom: 1.25rem;
+}
+
+.config-section h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+/* Dropdown selects */
+.config-section select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 3px;
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
   cursor: pointer;
-  font-size: 16px;
-  padding: 2px 6px;
-  line-height: 1;
-  color: var(--text-primary);
+  appearance: auto;
 }
 
-#darkModeToggle:hover {
-  background: var(--hover-bg);
+.config-section select:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 
-#modelSelect {
+/* Secondary button (Copy Link, etc.) */
+.btn-secondary {
   width: 100%;
-  padding: 6px;
-  margin-bottom: 10px;
-  font-size: 13px;
-  border: 1px solid var(--border-color);
-  border-radius: 3px;
-  box-sizing: border-box;
-  background: var(--btn-bg);
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
   color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
 }
 
-#copyLinkBtn {
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+}
+
+.btn-secondary:active {
+  background: var(--bg-panel);
+}
+
+/* Slider Label */
+.slider-label {
+  grid-column: span 3;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* Range Slider */
+input[type="range"] {
   width: 100%;
-  padding: 6px;
-  margin-bottom: 10px;
-  font-size: 13px;
-  border: 1px solid var(--border-color);
+  height: 6px;
+  appearance: none;
+  background: var(--border-color);
   border-radius: 3px;
-  background: var(--btn-bg);
-  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  grid-column: span 3;
+  margin-bottom: 10px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: none;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-#copyLinkBtn:hover {
-  background: var(--btn-hover);
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: var(--accent-hover);
 }
 
-#copyLinkBtn:active {
-  background: var(--btn-active);
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
 }
 
+/* Color Controls */
 #colorControls {
-  margin-bottom: 10px;
-  padding: 8px;
-  border: 1px solid var(--border-color);
-  border-radius: 3px;
-  background: var(--btn-bg);
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+#colorControls h3 {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
 }
 
 .color-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 0.75rem;
 }
 
 .color-row + .color-row {
-  margin-top: 6px;
+  margin-top: 0.5rem;
 }
 
 .color-row label {
-  font-size: 13px;
+  font-size: 0.875rem;
   color: var(--text-primary);
 }
 
 .color-row input[type="color"] {
-  width: 60px;
-  height: 28px;
-  padding: 2px;
+  width: 100%;
+  max-width: 80px;
+  height: 32px;
   border: 1px solid var(--border-color);
-  border-radius: 3px;
-  background: var(--btn-bg);
+  border-radius: 4px;
+  background: var(--bg-secondary);
   cursor: pointer;
+  padding: 2px;
+}
+
+.color-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.color-row input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 2px;
+}
+/* Scene Tree */
+#tree {
+  overflow-x: auto;
+  min-width: min-content;
+}
+
+#tree > .tree-item {
+  min-width: fit-content;
+}
+
+#tree::-webkit-scrollbar {
+  height: 6px;
+}
+
+#tree::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 3px;
+}
+
+#tree::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+#tree::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
 }
 
 .tree-item {
-  padding: 4px 0;
+  padding: 3px 0;
   cursor: pointer;
   user-select: none;
+  border-radius: 4px;
 }
 
 .tree-item:hover {
-  background: var(--hover-bg);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .tree-item-content {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  padding: 2px 6px;
 }
 
 .tree-toggle {
   width: 16px;
   text-align: center;
-  font-size: 12px;
-  color: var(--toggle-color);
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .tree-checkbox {
-  width: 16px;
-  height: 16px;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-color);
+  border-radius: 3px;
   cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.tree-checkbox:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.tree-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 9px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .tree-label {
-  flex: 1;
-  font-size: 14px;
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  user-select: text;
+  cursor: text;
 }
 
 .tree-children {
@@ -231,77 +388,142 @@ body {
 }
 
 .tree-item.hidden .tree-label {
-  color: var(--text-disabled);
+  color: var(--text-muted);
   text-decoration: line-through;
 }
 
+/* 3D Viewer */
+.viewer-container {
+  flex: 1;
+  position: relative;
+  background: var(--bg-primary);
+}
+
+#viewer {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Viewer Controls */
 #viewControls {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 1rem;
+  right: 1rem;
   z-index: 10;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 10px;
   display: grid;
   grid-template-columns: repeat(3, 60px);
   gap: 5px;
+  background: var(--bg-panel);
+  padding: 0.25rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
 }
 
-#viewControls hr {
-  grid-column: span 3;
-  border: none;
-  border-top: 1px solid var(--border-color);
-  margin: 5px 0;
-}
-
-.view-btn {
-  padding: 6px 8px;
-  border: 1px solid var(--btn-border);
-  background: var(--btn-bg);
-  color: var(--text-primary);
-  cursor: pointer;
-  font-size: 12px;
-  line-height: 1.3;
-  border-radius: 3px;
-  transition: background 0.2s;
-}
-
-.view-btn:hover {
-  background: var(--btn-hover);
-}
-
-.view-btn:active {
-  background: var(--btn-active);
-}
-
-#loadingOverlay {
-  position: absolute;
-  inset: 0;
-  background: var(--loading-bg);
-  display: flex;
-  flex-direction: column;
+.viewer-btn {
+  height: 45px;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
 }
 
-#loadingOverlay .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid var(--spinner-border);
-  border-top-color: var(--spinner-top);
+.viewer-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.viewer-btn:active {
+  background: var(--accent);
+  color: white;
+}
+
+.viewer-btn-separator {
+  width: 100%;
+  height: 1px;
+  background: var(--border-color);
+  margin: 2px 0;
+  grid-column: span 3;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(26, 26, 46, 0.9);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  z-index: 100;
+  transition: opacity 0.3s;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.loading-indicator.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.spinner-small {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
-#loadingOverlay p {
-  margin-top: 16px;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Attribution */
+.attribution {
+  position: absolute;
+  bottom: 0.75rem;
+  right: 0.75rem;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: rgba(10, 12, 16, 0.8);
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+.attribution a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.attribution a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .config-panel {
+    width: 100%;
+    max-height: 45vh;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .viewer-container {
+    min-height: 55vh;
+  }
 }
