@@ -132,6 +132,27 @@ body {
   color: var(--text-primary);
 }
 
+#copyLinkBtn {
+  width: 100%;
+  padding: 6px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  background: var(--btn-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#copyLinkBtn:hover {
+  background: var(--btn-hover);
+}
+
+#copyLinkBtn:active {
+  background: var(--btn-active);
+}
+
 #colorControls {
   margin-bottom: 10px;
   padding: 8px;

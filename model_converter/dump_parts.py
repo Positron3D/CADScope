@@ -4,13 +4,14 @@ Dump part names from a GLB file into a .colors.json template.
 
 Reads the JSON chunk of a GLB to extract node names, cleans them
 with the same logic as blender_export.py and viewer.js, and writes
-a scaffold .colors.json.
+a scaffold .colors.json using the categories format.
 
 Output has two reference lists:
   _groups  — parent/assembly names (color all children via tier-3 matching)
   _parts   — individual mesh names (for fine-grained control)
 
-Move names into "main_parts" / "accent_parts", then delete the _ keys.
+Move names from _groups/_parts into category "parts" arrays, then
+delete the _ keys. Add more categories as needed.
 
 Usage:
     python dump_parts.py model.glb                  # writes model.colors.json next to the GLB
@@ -33,6 +34,8 @@ def clean_node_name(name):
     clean = re.sub(r"\.step$", "", clean, flags=re.IGNORECASE)
     clean = re.sub(r"\s*\(mesh\)\s*", "", clean, flags=re.IGNORECASE)
     clean = re.sub(r"\s*\(group\)\s*", "", clean, flags=re.IGNORECASE)
+    # Blender replaces spaces with underscores in object names on import
+    clean = clean.replace(" ", "_")
     return clean.strip()
 
 
@@ -119,10 +122,10 @@ def main():
     group_names, mesh_names = extract_names(glb_json)
 
     template = {
-        "main_color": "#FF6600",
-        "accent_color": "#00AAFF",
-        "main_parts": [],
-        "accent_parts": [],
+        "categories": {
+            "Main": {"color": "#FF6600", "parts": []},
+            "Accent": {"color": "#00AAFF", "parts": []},
+        },
         "_groups": group_names,
         "_parts": mesh_names,
     }
@@ -132,7 +135,7 @@ def main():
         f.write("\n")
 
     print(f"Found {len(group_names)} groups, {len(mesh_names)} parts → {out_path}")
-    print("Move names from _groups/_parts into main_parts/accent_parts, then delete the _ keys.")
+    print("Move names from _groups/_parts into category parts arrays, then delete the _ keys.")
 
 
 if __name__ == "__main__":

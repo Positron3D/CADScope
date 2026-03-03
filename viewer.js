@@ -52,8 +52,9 @@ const gltfLoader = new GLTFLoader();
 gltfLoader.setDRACOLoader(dracoLoader);
 
 let currentModel = null;
-let mainMeshes = [];
-let accentMeshes = [];
+// Per-category state: category name -> array of meshes / color picker input
+const categoryMeshes = new Map();
+const categoryPickers = new Map();
 
 // URL query string support
 function modelStem(path) {
@@ -65,8 +66,11 @@ function updateURL() {
   const path = document.getElementById('modelSelect').value;
   params.set('model', modelStem(path));
   if (document.getElementById('colorControls').style.display !== 'none') {
-    params.set('main', document.getElementById('mainColorPicker').value.slice(1));
-    params.set('accent', document.getElementById('accentColorPicker').value.slice(1));
+    for (const [name, picker] of categoryPickers) {
+      if (name !== 'model') {
+        params.set(name, picker.value.slice(1));
+      }
+    }
   }
   history.replaceState(null, '', '?' + params.toString());
 }
@@ -82,8 +86,20 @@ if (urlModel) {
     }
   }
 }
-let urlMainColor = urlParams.get('main') ? '#' + urlParams.get('main') : null;
-let urlAccentColor = urlParams.get('accent') ? '#' + urlParams.get('accent') : null;
+// URL color overrides are consumed once on initial load, then cleared
+let urlColorsConsumed = false;
+
+// Populate URL immediately with current model selection
+updateURL();
+
+document.getElementById('copyLinkBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('copyLinkBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  });
+});
 
 function cleanNodeName(name) {
   if (!name) return '';
@@ -93,6 +109,8 @@ function cleanNodeName(name) {
   cleaned = cleaned.replace(/\.step/i, '');
   // Remove (mesh) and (group) suffixes
   cleaned = cleaned.replace(/\s*\(mesh\)\s*/i, '').replace(/\s*\(group\)\s*/i, '');
+  // Blender replaces spaces with underscores in object names on import
+  cleaned = cleaned.replace(/ /g, '_');
   return cleaned.trim();
 }
 
@@ -101,14 +119,17 @@ function stripNumericSuffix(name) {
 }
 
 function applyColorSet(colorSet, model) {
-  mainMeshes = [];
-  accentMeshes = [];
+  categoryMeshes.clear();
 
-  const mainSet = new Set(colorSet.main_parts || []);
-  const accentSet = new Set(colorSet.accent_parts || []);
-  const mainColor = new THREE.Color(colorSet.main_color);
-  const accentColor = new THREE.Color(colorSet.accent_color);
+  // Build per-category part sets and colors
+  const categories = [];
+  for (const [name, cat] of Object.entries(colorSet.categories)) {
+    const partSet = new Set(cat.parts || []);
+    categories.push({ name, partSet, color: new THREE.Color(cat.color) });
+    categoryMeshes.set(name, []);
+  }
 
+  // First-match semantics: earlier categories win
   model.traverse((obj) => {
     if (!obj.isMesh) return;
 
@@ -116,17 +137,13 @@ function applyColorSet(colorSet, model) {
     const stripped = stripNumericSuffix(cleaned);
     const parentCleaned = obj.parent ? cleanNodeName(obj.parent.name) : '';
 
-    let group = null;
-    if (mainSet.has(cleaned) || mainSet.has(stripped) || mainSet.has(parentCleaned)) {
-      group = 'main';
-    } else if (accentSet.has(cleaned) || accentSet.has(stripped) || accentSet.has(parentCleaned)) {
-      group = 'accent';
-    }
-
-    if (group) {
-      obj.material = obj.material.clone();
-      obj.material.color.copy(group === 'main' ? mainColor : accentColor);
-      (group === 'main' ? mainMeshes : accentMeshes).push(obj);
+    for (const cat of categories) {
+      if (cat.partSet.has(cleaned) || cat.partSet.has(stripped) || cat.partSet.has(parentCleaned)) {
+        obj.material = obj.material.clone();
+        obj.material.color.copy(cat.color);
+        categoryMeshes.get(cat.name).push(obj);
+        break;
+      }
     }
   });
 }
@@ -134,8 +151,6 @@ function applyColorSet(colorSet, model) {
 function loadColorSet(path, model) {
   const colorPath = path.replace(/\.glb$/, '.colors.json');
   const colorControls = document.getElementById('colorControls');
-  const mainPicker = document.getElementById('mainColorPicker');
-  const accentPicker = document.getElementById('accentColorPicker');
 
   fetch(colorPath).then((res) => {
     if (!res.ok) {
@@ -146,43 +161,54 @@ function loadColorSet(path, model) {
     return res.json();
   }).then((colorSet) => {
     if (!colorSet) return;
-    mainPicker.value = colorSet.main_color;
-    accentPicker.value = colorSet.accent_color;
-    applyColorSet(colorSet, model);
-    colorControls.style.display = '';
 
-    // Override with URL colors if present
-    if (urlMainColor) {
-      mainPicker.value = urlMainColor;
-      const mc = new THREE.Color(urlMainColor);
-      mainMeshes.forEach((mesh) => { mesh.material.color.copy(mc); });
+    applyColorSet(colorSet, model);
+
+    // Build color picker UI dynamically from categories
+    colorControls.innerHTML = '';
+    categoryPickers.clear();
+    for (const [name, cat] of Object.entries(colorSet.categories)) {
+      const row = document.createElement('div');
+      row.className = 'color-row';
+
+      const label = document.createElement('label');
+      label.textContent = name;
+
+      const picker = document.createElement('input');
+      picker.type = 'color';
+      picker.value = cat.color;
+
+      // Apply URL override on first load
+      if (!urlColorsConsumed && name !== 'model') {
+        const urlVal = urlParams.get(name);
+        if (urlVal) {
+          const override = '#' + urlVal;
+          picker.value = override;
+          const c = new THREE.Color(override);
+          (categoryMeshes.get(name) || []).forEach((mesh) => { mesh.material.color.copy(c); });
+        }
+      }
+
+      picker.addEventListener('input', () => {
+        const c = new THREE.Color(picker.value);
+        (categoryMeshes.get(name) || []).forEach((mesh) => { mesh.material.color.copy(c); });
+        updateURL();
+      });
+
+      row.appendChild(label);
+      row.appendChild(picker);
+      colorControls.appendChild(row);
+      categoryPickers.set(name, picker);
     }
-    if (urlAccentColor) {
-      accentPicker.value = urlAccentColor;
-      const ac = new THREE.Color(urlAccentColor);
-      accentMeshes.forEach((mesh) => { mesh.material.color.copy(ac); });
-    }
-    // Clear URL overrides so subsequent model switches use defaults
-    urlMainColor = null;
-    urlAccentColor = null;
+
+    urlColorsConsumed = true;
+    colorControls.style.display = '';
     updateURL();
   }).catch(() => {
     colorControls.style.display = 'none';
     updateURL();
   });
 }
-
-document.getElementById('mainColorPicker').addEventListener('input', (e) => {
-  const color = new THREE.Color(e.target.value);
-  mainMeshes.forEach((mesh) => { mesh.material.color.copy(color); });
-  updateURL();
-});
-
-document.getElementById('accentColorPicker').addEventListener('input', (e) => {
-  const color = new THREE.Color(e.target.value);
-  accentMeshes.forEach((mesh) => { mesh.material.color.copy(color); });
-  updateURL();
-});
 
 function loadModel(path) {
   // Remove previous model
