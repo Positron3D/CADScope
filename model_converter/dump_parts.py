@@ -125,6 +125,8 @@ def main():
         "categories": {
             "Main": {"color": "#FF6600", "parts": []},
             "Accent": {"color": "#00AAFF", "parts": []},
+            "Extrusions": {"color": "#888888", "parts": []},
+            "Opaque Panels": {"color": "#333333", "parts": []},
         },
         "_groups": group_names,
         "_parts": mesh_names,
