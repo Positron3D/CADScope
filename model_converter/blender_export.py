@@ -1,3 +1,5 @@
+# ABOUTME: Blender Python script that imports a FreeCAD GLB, applies per-part colors, and exports Draco-compressed GLB.
+# ABOUTME: Stage 3 of the STEP→GLB conversion pipeline (see convert.sh).
 """
 Blender Python script: Import GLB from FreeCAD, apply colors, and export
 as Draco-compressed GLB.
@@ -47,7 +49,24 @@ def strip_numeric_suffix(name):
     m = re.match(r'^(.+)-\d+$', name)
     if m:
         return m.group(1)
+    # FreeCAD parenthesized instance: "Name_(2)" → "Name"
+    m = re.match(r'^(.+)_\(\d+\)$', name)
+    if m:
+        return m.group(1)
     return name
+
+
+def normalize_for_matching(name):
+    """Normalize a part name for matching between STEP extraction and GLB objects.
+
+    STEP product names use spaces and include version suffixes (e.g. " v2", " v2.8")
+    that FreeCAD strips during import. Blender also converts spaces to underscores.
+    """
+    # Strip version suffixes: " v2", " v2.8", " v2.8.1" etc.
+    n = re.sub(r' v\d+(\.\d+)*', '', name)
+    # Spaces to underscores (FreeCAD/Blender convention)
+    n = n.replace(' ', '_')
+    return n
 
 
 def apply_colors(colors_path):
@@ -83,11 +102,12 @@ def apply_colors(colors_path):
 
         bl_materials[color_name] = mat
 
-    # Build lookup: cleaned part name → color name
-    # Apply clean_node_name() to JSON keys (they come from PRODUCT_DEFINITION names)
+    # Build lookup: normalized part name → color name
+    # JSON keys come from STEP PRODUCT_DEFINITION names which use spaces and
+    # include version suffixes that FreeCAD/Blender strip during import.
     name_to_color = {}
     for part_name, color_name in objects_data.items():
-        cleaned = clean_node_name(part_name)
+        cleaned = normalize_for_matching(clean_node_name(part_name))
         name_to_color[cleaned] = color_name
 
     # Also build stripped-suffix lookup for fallback
@@ -104,7 +124,7 @@ def apply_colors(colors_path):
         if obj.type != 'MESH' or obj.data is None:
             continue
 
-        name = obj.name
+        name = normalize_for_matching(obj.name)
         color_name = name_to_color.get(name)
 
         if not color_name:
@@ -113,9 +133,10 @@ def apply_colors(colors_path):
 
         if not color_name and obj.parent:
             # Try parent name
-            color_name = name_to_color.get(obj.parent.name)
+            pname = normalize_for_matching(obj.parent.name)
+            color_name = name_to_color.get(pname)
             if not color_name:
-                color_name = stripped_to_color.get(strip_numeric_suffix(obj.parent.name))
+                color_name = stripped_to_color.get(strip_numeric_suffix(pname))
 
         if color_name and color_name in bl_materials:
             obj.data.materials.clear()

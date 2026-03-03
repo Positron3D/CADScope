@@ -4,12 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CADScope</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
   <!-- Inter font from Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="viewer.css">
+  <link rel="stylesheet" href="assets/viewer.css">
 </head>
 <body>
   <div id="app">
@@ -32,14 +32,19 @@
             <select id="modelSelect"></select>
           </section>
 
-          <section class="config-section">
-            <button class="btn-secondary" id="copyLinkBtn">Copy Configuration URL</button>
+          <section class="config-section button-row">
+            <button class="btn-secondary" id="copyLinkBtn">Copy URL</button>
+            <button class="btn-secondary" id="resetColorsBtn">Reset Defaults</button>
           </section>
 
           <div id="colorControls" style="display:none"></div>
 
           <section class="config-section">
             <h3>Scene Hierarchy</h3>
+            <div class="search-wrapper">
+              <input id="treeSearch" type="text" placeholder="Search parts...">
+              <button id="treeSearchClear" class="search-clear" type="button">&times;</button>
+            </div>
             <div id="tree"></div>
           </section>
         </div>
@@ -51,19 +56,26 @@
 
         <!-- Viewer Controls -->
         <div id="viewControls">
-          <button class="viewer-btn" onclick="setView('left')" title="Left">◀<br>Left</button>
-          <button class="viewer-btn" onclick="setView('right')" title="Right">▶<br>Right</button>
-          <button class="viewer-btn" onclick="setView('home')" title="Home">⌂<br>Home</button>
+          <button class="viewer-btn"></button>
           <button class="viewer-btn" onclick="setView('top')" title="Top">▲<br>Top</button>
           <button class="viewer-btn" onclick="setView('front')" title="Front">◉<br>Front</button>
-          <button class="viewer-btn" onclick="setView('iso')" title="Iso">◇<br>Iso</button>
+
+          <button class="viewer-btn" onclick="setView('left')" title="Left">◀<br>Left</button>
+          <button class="viewer-btn" onclick="setView('home')" title="Home">⌂<br>Home</button>
+          <button class="viewer-btn" onclick="setView('right')" title="Right">▶<br>Right</button>
+                 
+          <button class="viewer-btn"></button>
           <button class="viewer-btn" onclick="setView('bottom')" title="Bottom">▼<br>Bottom</button>
           <button class="viewer-btn" onclick="setView('back')" title="Back">◈<br>Back</button>
+
           <div class="viewer-btn-separator"></div>
+          
           <button class="viewer-btn" onclick="zoom(0.2)" title="Zoom Out">−<br>Zoom</button>
           <button class="viewer-btn" onclick="resetZoom()" title="Reset Zoom">⟳<br>Reset</button>
           <button class="viewer-btn" onclick="zoom(-0.2)" title="Zoom In">+<br>Zoom</button>
+          
           <div class="viewer-btn-separator"></div>
+          
           <label class="slider-label" for="brightnessSlider">Brightness</label>
           <input type="range" id="brightnessSlider" min="0" max="200" value="150" title="Brightness">
         </div>
@@ -85,11 +97,11 @@
   <script type="importmap">
   {
     "imports": {
-      "three": "https://unpkg.com/three@0.161.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.161.0/examples/jsm/"
+      "three": "https://unpkg.com/three@0.164.1/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.164.1/examples/jsm/"
     }
   }
   </script>
-  <script type="module" src="viewer.js"></script>
+  <script type="module" src="assets/viewer.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@
 # Usage:
 #   ./convert.sh input.step output.glb
 #   ./convert.sh --no-draco input.step output.glb
+#   ./convert.sh --keep-temp input.step output.glb   # saves FreeCAD intermediate as _temp.glb
 
 set -euo pipefail
 
@@ -16,18 +17,20 @@ BLENDER="/Applications/Blender.app/Contents/MacOS/Blender"
 FREECADCMD="/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Parse --no-draco flag (pass through to Blender script)
+# Parse flags
 NO_DRACO=""
+KEEP_TEMP=""
 POSITIONAL=()
 for arg in "$@"; do
     case "$arg" in
         --no-draco) NO_DRACO="--no-draco" ;;
+        --keep-temp) KEEP_TEMP=1 ;;
         *) POSITIONAL+=("$arg") ;;
     esac
 done
 
 if [ ${#POSITIONAL[@]} -lt 2 ]; then
-    echo "Usage: $0 [--no-draco] <input.step> <output.glb>"
+    echo "Usage: $0 [--no-draco] [--keep-temp] <input.step> <output.glb>"
     exit 1
 fi
 
@@ -70,6 +73,12 @@ fi
 echo ""
 echo "=== Stage 2/3: STEP → GLB (FreeCAD) ==="
 "$FREECADCMD" "$SCRIPT_DIR/step_to_glb.py" -- "$INPUT" "$TMPGLB"
+
+if [ -n "$KEEP_TEMP" ]; then
+    TEMP_DEST="$(dirname "$OUTPUT")/_temp.glb"
+    cp "$TMPGLB" "$TEMP_DEST"
+    echo "Intermediate GLB saved to $TEMP_DEST"
+fi
 
 echo ""
 echo "=== Stage 3/3: GLB → Draco GLB (Blender) ==="

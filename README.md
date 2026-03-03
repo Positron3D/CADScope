@@ -104,9 +104,7 @@ Part names should match what you see in the sidebar hierarchy. The viewer uses t
 
 ## Future Possibilities...
 
-- Identify situations like "M3_Roll-in_T-Nut" / "M3_Roll-in_T-Nut_(1)" and simplify the labels.
-- Would be cool to be able to select an item in the hierarchy and have it highlighted in the render
-
+??? ask! pull request!
 
 ## Credits
 

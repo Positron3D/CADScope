@@ -26,7 +26,11 @@ import os
 
 
 def clean_node_name(name):
-    """Mirror the clean logic in blender_export.py / viewer.js."""
+    """Mirror the clean logic in blender_export.py / viewer.js.
+
+    Also applies Three.js PropertyBinding.sanitizeNodeName() which strips
+    characters reserved for animation paths: [ ] . : /
+    """
     if not name:
         return name
     clean = name.split("/")[-1]
@@ -34,8 +38,9 @@ def clean_node_name(name):
     clean = re.sub(r"\.step$", "", clean, flags=re.IGNORECASE)
     clean = re.sub(r"\s*\(mesh\)\s*", "", clean, flags=re.IGNORECASE)
     clean = re.sub(r"\s*\(group\)\s*", "", clean, flags=re.IGNORECASE)
-    # Blender replaces spaces with underscores in object names on import
+    # Three.js sanitizeNodeName: spaces → underscores, strip [ ] . : /
     clean = clean.replace(" ", "_")
+    clean = re.sub(r'[\[\].:\/]', '', clean)
     return clean.strip()
 
 
@@ -123,10 +128,12 @@ def main():
 
     template = {
         "categories": {
-            "Main": {"color": "#FF6600", "parts": []},
-            "Accent": {"color": "#00AAFF", "parts": []},
-            "Extrusions": {"color": "#888888", "parts": []},
-            "Opaque Panels": {"color": "#333333", "parts": []},
+            "Main": {"color": "#FF6600", "parts": [], "metalness": 0.0, "visible": True},
+            "Accent": {"color": "#00AAFF", "parts": [], "metalness": 0.0, "visible": True},
+            "Extrusions": {"color": "#888888", "parts": [], "metalness": 0.8, "visible": False},
+            "Opaque Panels": {"color": "#333333", "parts": [], "metalness": 0.0, "visible": False},
+            "Transparent Panels": {"color": "#555555", "parts": [], "metalness": 0.0, "visible": False},
+            "Glass": {"color": "#ccddee", "parts": [], "metalness": 0.1, "opacity": 0.15, "visible": False},
         },
         "_groups": group_names,
         "_parts": mesh_names,
