@@ -4,7 +4,7 @@
 """
 Build sidecar/manifest outputs from a GLB.
 
-Two modes, auto-detected:
+Three modes:
 
   Scaffold mode (default when no <model>.spec.yaml is present) writes:
     <model>.scaffold.json   — always-overwritten reference dump of the GLB tree.
@@ -13,12 +13,15 @@ Two modes, auto-detected:
   Full mode (when <model>.spec.yaml exists) additionally writes:
     <model>.colors.json     — generated CADScope sidecar (palette/autoAssign/nodes).
     <model>.manifest.json   — generated Prusawire manifest (options/parts/stl).
-  (Full mode is added in a follow-up; this entrypoint currently only runs scaffold mode.)
+
+  Check mode (--check) is read-only: parses + validates the spec, walks the GLB,
+  and prints an autoAssign coverage report. Writes nothing.
 
 Usage:
     python build_configurator.py model.glb                    # auto-detect mode
     python build_configurator.py model.glb -o custom.json     # override base output path
     python build_configurator.py --scaffold-only model.glb    # force scaffold mode
+    python build_configurator.py --check model.glb            # validate + coverage report
 """
 
 import json
@@ -224,6 +227,11 @@ def parse_args(argv):
         args.remove("--scaffold-only")
         scaffold_only = True
 
+    check_only = False
+    if "--check" in args:
+        args.remove("--check")
+        check_only = True
+
     output_base = None
     if "-o" in args:
         idx = args.index("-o")
@@ -237,11 +245,65 @@ def parse_args(argv):
         print("Error: missing GLB path", file=sys.stderr)
         sys.exit(2)
 
-    return args[0], output_base, scaffold_only
+    return args[0], output_base, scaffold_only, check_only
+
+
+def format_check_report(spec, spec_path, glb_path, glb_paths, validator_warnings, coverage):
+    """Render a coverage report as plain text. Used by --check mode."""
+    lines = []
+    lines.append(f"spec:    {spec_path} — VALID")
+    lines.append(f"glb:     {glb_path} ({coverage.total_nodes} nodes)")
+    lines.append("")
+
+    cat_names = ", ".join(spec.palette.keys())
+    lines.append(f"palette: {len(spec.palette)} categories ({cat_names})")
+
+    if spec.auto_assign:
+        lines.append(f"autoAssign: {len(spec.auto_assign)} rules")
+        max_cat = max(len(r["category"]) for r in spec.auto_assign)
+        max_pat = max(len(r["match"]) for r in spec.auto_assign)
+        for i, rule in enumerate(spec.auto_assign):
+            cat = rule["category"].ljust(max_cat)
+            pat = rule["match"].ljust(max_pat)
+            count = coverage.rule_counts[i]
+            warn = "  (zero-match)" if count == 0 else ""
+            lines.append(f"  [{cat}] {pat} → {count:>5} nodes{warn}")
+    else:
+        lines.append("autoAssign: (none)")
+
+    lines.append("")
+    covered = coverage.covered_via_autoAssign + coverage.covered_via_overrides
+    pct = covered * 100 // max(coverage.total_nodes, 1)
+    lines.append(
+        f"covered:   {coverage.covered_via_autoAssign} via autoAssign + "
+        f"{coverage.covered_via_overrides} per-node overrides "
+        f"= {covered}/{coverage.total_nodes} ({pct}%)")
+    lines.append(
+        f"uncovered: {coverage.uncovered}"
+        + ("  (descendants inherit a category at runtime if their ancestor is matched)"
+           if coverage.uncovered else ""))
+
+    if coverage.uncovered_sample:
+        lines.append("")
+        lines.append(f"uncovered sample (first {len(coverage.uncovered_sample)}, in tree order):")
+        for path in coverage.uncovered_sample:
+            lines.append(f"  {path}")
+
+    lines.append("")
+    lines.append(f"per-node entries:    {len(spec.nodes)}")
+    lines.append(f"visibility rules:    {len(spec.rules)}")
+
+    if validator_warnings:
+        lines.append("")
+        lines.append("warnings:")
+        for w in validator_warnings:
+            lines.append(f"  {w}")
+
+    return "\n".join(lines)
 
 
 def main():
-    glb_path, output_base, scaffold_only = parse_args(sys.argv)
+    glb_path, output_base, scaffold_only, check_only = parse_args(sys.argv)
 
     if not os.path.isfile(glb_path):
         print(f"Error: file not found: {glb_path}", file=sys.stderr)
@@ -251,6 +313,24 @@ def main():
     glb_json = read_glb_json(glb_path)
     spec_path = derive_spec_path(glb_path, output_base)
     has_spec = os.path.isfile(spec_path)
+
+    if check_only:
+        if not has_spec:
+            print(f"Error: --check requires a sibling .spec.yaml at {spec_path}",
+                  file=sys.stderr)
+            return 1
+        from spec import parse_file, SpecError, validate_against_tree, compute_coverage
+        try:
+            s = parse_file(spec_path)
+        except SpecError as e:
+            print(f"spec:    {spec_path} — INVALID")
+            print(f"  {e}")
+            return 1
+        glb_paths = [p for p, _ in build_node_paths(glb_json)]
+        warnings = validate_against_tree(s, glb_paths)
+        coverage = compute_coverage(s, glb_paths)
+        print(format_check_report(s, spec_path, glb_path, glb_paths, warnings, coverage))
+        return 0
 
     n_groups, n_parts, n_nodes = emit_scaffold(glb_json, scaffold_path)
     print(f"Wrote scaffold ({n_groups} groups, {n_parts} parts, {n_nodes} nodes): {scaffold_path}")

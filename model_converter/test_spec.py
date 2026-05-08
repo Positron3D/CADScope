@@ -23,6 +23,7 @@ if YAML_AVAILABLE:
         evaluate_visible,
         default_config,
         validate_against_tree,
+        compute_coverage,
     )
 
 
@@ -257,6 +258,119 @@ class TestValidateAgainstTree(unittest.TestCase):
         warnings = validate_against_tree(s, ["RealThing", "RealOther"])
         self.assertTrue(any("NeverMatches" in w for w in warnings))
         self.assertFalse(any("Real*" in w for w in warnings))
+
+
+@unittest.skipUnless(YAML_AVAILABLE, "PyYAML not installed")
+class TestComputeCoverage(unittest.TestCase):
+    def _spec(self, text):
+        return parse(textwrap.dedent(text).strip())
+
+    def test_empty_spec_all_uncovered(self):
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+        """)
+        cov = compute_coverage(s, ["X", "Y", "Z"])
+        self.assertEqual(cov.total_nodes, 3)
+        self.assertEqual(cov.covered_via_autoAssign, 0)
+        self.assertEqual(cov.covered_via_overrides, 0)
+        self.assertEqual(cov.uncovered, 3)
+        self.assertEqual(cov.rule_counts, [])
+
+    def test_single_rule_matches_all(self):
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            autoAssign:
+              - { match: '*', category: A }
+        """)
+        cov = compute_coverage(s, ["X", "Y", "Z"])
+        self.assertEqual(cov.covered_via_autoAssign, 3)
+        self.assertEqual(cov.uncovered, 0)
+        self.assertEqual(cov.rule_counts, [3])
+
+    def test_first_match_wins_among_overlapping_rules(self):
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' }, B: { color: '#bbb' } }
+            autoAssign:
+              - { match: 'Foo*', category: A }
+              - { match: '*Bar*', category: B }
+        """)
+        cov = compute_coverage(s, ["FooBar", "Bar", "Foo"])
+        self.assertEqual(cov.rule_counts, [2, 1])
+
+    def test_per_node_override_excluded_from_autoAssign_count(self):
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            autoAssign:
+              - { match: '*', category: A }
+            nodes:
+              Special: { category: A }
+        """)
+        cov = compute_coverage(s, ["A", "Special"])
+        self.assertEqual(cov.covered_via_overrides, 1)
+        self.assertEqual(cov.covered_via_autoAssign, 1)
+        self.assertEqual(cov.rule_counts, [1])
+        self.assertEqual(cov.uncovered, 0)
+
+    def test_per_node_entry_without_category_is_not_covered_override(self):
+        """A node entry with displayName but no category isn't counted as override-covered."""
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            nodes:
+              Decorative: { displayName: "Pretty" }
+        """)
+        cov = compute_coverage(s, ["Decorative"])
+        self.assertEqual(cov.covered_via_overrides, 0)
+        self.assertEqual(cov.uncovered, 1)
+
+    def test_zero_match_rule_has_zero_count(self):
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            autoAssign:
+              - { match: 'NeverMatch*', category: A }
+              - { match: '*', category: A }
+        """)
+        cov = compute_coverage(s, ["X", "Y"])
+        self.assertEqual(cov.rule_counts, [0, 2])
+
+    def test_last_component_matching_parity_with_validator(self):
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            autoAssign:
+              - { match: 'Leaf*', category: A }
+        """)
+        cov = compute_coverage(s, ["Path/To/Leaf1", "Path/To/Other"])
+        self.assertEqual(cov.rule_counts, [1])
+        self.assertEqual(cov.uncovered, 1)
+
+    def test_uncovered_sample_in_tree_order(self):
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+        """)
+        nodes = [f"node_{i:02d}" for i in range(20)]
+        cov = compute_coverage(s, nodes)
+        self.assertEqual(cov.uncovered, 20)
+        self.assertEqual(len(cov.uncovered_sample), 10)
+        self.assertEqual(cov.uncovered_sample, nodes[:10])
+
+    def test_rule_samples_capped(self):
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            autoAssign:
+              - { match: '*', category: A }
+        """)
+        nodes = [f"n{i}" for i in range(20)]
+        cov = compute_coverage(s, nodes)
+        self.assertLessEqual(len(cov.rule_samples[0]), 10)
+        self.assertEqual(cov.rule_samples[0], nodes[:len(cov.rule_samples[0])])
 
 
 if __name__ == "__main__":

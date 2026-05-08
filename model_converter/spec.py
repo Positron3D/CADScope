@@ -329,6 +329,72 @@ def default_config(spec: Spec) -> dict:
     return config
 
 
+@dataclass
+class CoverageReport:
+    """Per-node coverage of an autoAssign + per-node-override pass over the GLB tree."""
+    total_nodes: int
+    covered_via_autoAssign: int
+    covered_via_overrides: int
+    uncovered: int
+    uncovered_sample: list[str]
+    rule_counts: list[int]
+    rule_samples: list[list[str]]
+
+
+_COVERAGE_SAMPLE_LIMIT = 10
+
+
+def _path_or_leaf_matches(path: str, pattern: str) -> bool:
+    return fnmatchcase(path, pattern) or fnmatchcase(path.split("/")[-1], pattern)
+
+
+def compute_coverage(spec: Spec, glb_node_paths: list[str]) -> CoverageReport:
+    """Walk autoAssign rules in order; first-match-wins per node.
+
+    Per-node `category` overrides bypass autoAssign matching for that node and
+    count toward `covered_via_overrides`. Per-node entries without a category
+    (e.g., displayName-only) are not treated as covered.
+
+    Sample lists are capped at the first 10 paths in the input order so the
+    report stays readable on large GLBs.
+    """
+    overrides = {p for p, n in spec.nodes.items() if n.category is not None}
+    rule_counts = [0] * len(spec.auto_assign)
+    rule_samples = [[] for _ in spec.auto_assign]
+    covered_autoAssign = 0
+    covered_overrides = 0
+    uncovered_sample = []
+    uncovered_count = 0
+
+    for path in glb_node_paths:
+        if path in overrides:
+            covered_overrides += 1
+            continue
+        matched = False
+        for i, rule in enumerate(spec.auto_assign):
+            if _path_or_leaf_matches(path, rule["match"]):
+                rule_counts[i] += 1
+                if len(rule_samples[i]) < _COVERAGE_SAMPLE_LIMIT:
+                    rule_samples[i].append(path)
+                covered_autoAssign += 1
+                matched = True
+                break
+        if not matched:
+            uncovered_count += 1
+            if len(uncovered_sample) < _COVERAGE_SAMPLE_LIMIT:
+                uncovered_sample.append(path)
+
+    return CoverageReport(
+        total_nodes=len(glb_node_paths),
+        covered_via_autoAssign=covered_autoAssign,
+        covered_via_overrides=covered_overrides,
+        uncovered=uncovered_count,
+        uncovered_sample=uncovered_sample,
+        rule_counts=rule_counts,
+        rule_samples=rule_samples,
+    )
+
+
 def validate_against_tree(spec: Spec, glb_node_paths: list[str]) -> list[str]:
     """Cross-validate the spec against the actual GLB tree.
 

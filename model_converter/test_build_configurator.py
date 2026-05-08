@@ -201,6 +201,71 @@ nodes:
 
 @unittest.skipUnless(YAML_AVAILABLE and os.path.isfile(GLB_PATH),
                      "PyYAML or GLB fixture not present")
+class TestCheckMode(unittest.TestCase):
+    """--check parses + reports without writing any files."""
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.glb = os.path.join(self.tmp, "Model.glb")
+        self.spec = os.path.join(self.tmp, "Model.spec.yaml")
+        shutil.copyfile(GLB_PATH, self.glb)
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp, ignore_errors=True)
+
+    def _write_spec(self, body):
+        with open(self.spec, "w") as f:
+            f.write(body)
+
+    def test_check_writes_no_files(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Frame: { color: '#444' } }
+autoAssign:
+  - { match: '*', category: Frame }
+""")
+        before = set(os.listdir(self.tmp))
+        result = subprocess.run([sys.executable, SCRIPT, "--check", self.glb],
+                                capture_output=True, text=True, check=True)
+        after = set(os.listdir(self.tmp))
+        self.assertEqual(before, after, "no new files should be written")
+        self.assertIn("VALID", result.stdout)
+        self.assertIn("covered:", result.stdout)
+        self.assertIn("uncovered:", result.stdout)
+        self.assertIn("autoAssign:", result.stdout)
+
+    def test_check_missing_spec_exits_nonzero(self):
+        result = subprocess.run([sys.executable, SCRIPT, "--check", self.glb],
+                                capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("requires a sibling", result.stderr.lower())
+
+    def test_check_invalid_spec_exits_nonzero(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Main: { color: '#fff' } }
+autoAssign:
+  - { match: '*', category: BogusCategory }
+""")
+        result = subprocess.run([sys.executable, SCRIPT, "--check", self.glb],
+                                capture_output=True, text=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("INVALID", result.stdout)
+
+    def test_check_zero_match_rule_flagged_in_output(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Frame: { color: '#444' } }
+autoAssign:
+  - { match: 'NeverMatchesAnything*', category: Frame }
+""")
+        result = subprocess.run([sys.executable, SCRIPT, "--check", self.glb],
+                                capture_output=True, text=True, check=True)
+        self.assertIn("zero-match", result.stdout)
+
+
+@unittest.skipUnless(YAML_AVAILABLE and os.path.isfile(GLB_PATH),
+                     "PyYAML or GLB fixture not present")
 class TestPositronColorsRegression(unittest.TestCase):
     """A spec matching the existing hand-written Positron sidecar produces the same content."""
 
