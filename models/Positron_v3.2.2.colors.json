@@ -1,11 +1,30 @@
 {
   "palette": {
-    "Main":               { "color": "#FF6600" },
-    "Accent":             { "color": "#00AAFF" },
-    "Extrusions":         { "color": "#888888", "metalness": 0.8, "showInPicker": false },
-    "Opaque Panels":      { "color": "#333333", "showInPicker": false },
-    "Transparent Panels": { "color": "#555555", "showInPicker": false },
-    "Glass":              { "color": "#ccddee", "metalness": 0.1, "opacity": 0.15, "showInPicker": false }
+    "Main": {
+      "color": "#FF6600"
+    },
+    "Accent": {
+      "color": "#00AAFF"
+    },
+    "Extrusions": {
+      "color": "#888888",
+      "metalness": 0.8,
+      "showInPicker": false
+    },
+    "Opaque Panels": {
+      "color": "#333333",
+      "showInPicker": false
+    },
+    "Transparent Panels": {
+      "color": "#555555",
+      "showInPicker": false
+    },
+    "Glass": {
+      "color": "#ccddee",
+      "metalness": 0.1,
+      "opacity": 0.15,
+      "showInPicker": false
+    }
   },
   "autoAssign": [],
   "nodes": {}
