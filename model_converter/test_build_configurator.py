@@ -236,6 +236,33 @@ autoAssign: []
         self.assertEqual(generated, existing)
 
 
+@unittest.skipUnless(YAML_AVAILABLE and os.path.isfile(GLB_PATH),
+                     "PyYAML or GLB fixture not present")
+class TestShimForcesScaffoldOnly(unittest.TestCase):
+    """The dump_parts.py shim runs scaffold-only even if a sibling .spec.yaml exists."""
+
+    def test_shim_does_not_emit_manifest_when_spec_present(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            glb = os.path.join(tmp, "Model.glb")
+            spec = os.path.join(tmp, "Model.spec.yaml")
+            shutil.copyfile(GLB_PATH, glb)
+            with open(spec, "w") as f:
+                f.write("model: { name: T, glb: Model.glb }\n"
+                        "palette: { Solo: { color: '#abcdef' } }\n")
+            shim = os.path.join(os.path.dirname(__file__), "dump_parts.py")
+            subprocess.run([sys.executable, shim, glb],
+                           capture_output=True, text=True, check=True)
+            self.assertTrue(os.path.isfile(os.path.join(tmp, "Model.scaffold.json")))
+            self.assertTrue(os.path.isfile(os.path.join(tmp, "Model.colors.json")))
+            self.assertFalse(os.path.isfile(os.path.join(tmp, "Model.manifest.json")))
+            # Starter palette is multi-entry; the spec's single-entry palette
+            # would have replaced it if full mode had run.
+            with open(os.path.join(tmp, "Model.colors.json")) as f:
+                contents = json.load(f)
+            self.assertGreater(len(contents["palette"]), 1)
+            self.assertNotIn("Solo", contents["palette"])
+
+
 @unittest.skipUnless(os.path.isfile(GLB_PATH), "Positron GLB fixture not present")
 class TestLegacyDumpPartsShim(unittest.TestCase):
     """dump_parts.py is a shim that produces identical output to build_configurator."""
