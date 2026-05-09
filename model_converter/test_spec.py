@@ -338,7 +338,8 @@ class TestComputeCoverage(unittest.TestCase):
         cov = compute_coverage(s, ["X", "Y"])
         self.assertEqual(cov.rule_counts, [0, 2])
 
-    def test_last_component_matching_parity_with_validator(self):
+    def test_matches_leaf_not_full_path(self):
+        """Rules match against the bare leaf name only, mirroring viewer.js."""
         s = self._spec("""
             model: { name: T, glb: f.glb }
             palette: { A: { color: '#aaa' } }
@@ -348,6 +349,64 @@ class TestComputeCoverage(unittest.TestCase):
         cov = compute_coverage(s, ["Path/To/Leaf1", "Path/To/Other"])
         self.assertEqual(cov.rule_counts, [1])
         self.assertEqual(cov.uncovered, 1)
+
+    def test_path_prefix_pattern_does_not_match(self):
+        """Slash-containing patterns are dead at runtime — leaves have no slashes."""
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            autoAssign:
+              - { match: 'Group/*', category: A }
+        """)
+        cov = compute_coverage(s, ["Group/Child", "Group/Other"])
+        self.assertEqual(cov.rule_counts, [0])
+        self.assertEqual(cov.uncovered, 2)
+
+    def test_effective_coverage_via_cascade(self):
+        """A leaf-name match on the top-level group covers descendants via inheritance."""
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            autoAssign:
+              - { match: 'Frame', category: A }
+        """)
+        paths = ["Frame", "Frame/Sub", "Frame/Sub/Leaf"]
+        cov = compute_coverage(s, paths)
+        # Direct: only "Frame" matches (1)
+        self.assertEqual(cov.covered_via_autoAssign, 1)
+        self.assertEqual(cov.uncovered, 2)
+        # Effective: all three covered (Sub and Leaf inherit from Frame)
+        self.assertEqual(cov.effective_covered, 3)
+        self.assertEqual(cov.truly_uncovered, 0)
+
+    def test_truly_uncovered_when_no_ancestor_matches(self):
+        """A subtree with no ancestor match shows up as truly_uncovered."""
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            autoAssign:
+              - { match: 'Frame', category: A }
+        """)
+        paths = ["Frame", "Frame/Sub", "Other", "Other/Stuff"]
+        cov = compute_coverage(s, paths)
+        self.assertEqual(cov.effective_covered, 2)
+        self.assertEqual(cov.truly_uncovered, 2)
+        self.assertIn("Other", cov.truly_uncovered_sample)
+        self.assertIn("Other/Stuff", cov.truly_uncovered_sample)
+
+    def test_per_node_override_propagates_through_cascade(self):
+        """A per-node override on a group covers the whole subtree via cascade."""
+        s = self._spec("""
+            model: { name: T, glb: f.glb }
+            palette: { A: { color: '#aaa' } }
+            nodes:
+              Group: { category: A }
+        """)
+        paths = ["Group", "Group/Inner", "Group/Inner/Deep"]
+        cov = compute_coverage(s, paths)
+        self.assertEqual(cov.covered_via_overrides, 1)
+        self.assertEqual(cov.effective_covered, 3)
+        self.assertEqual(cov.truly_uncovered, 0)
 
     def test_uncovered_sample_in_tree_order(self):
         s = self._spec("""

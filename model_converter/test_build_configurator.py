@@ -230,8 +230,8 @@ autoAssign:
         after = set(os.listdir(self.tmp))
         self.assertEqual(before, after, "no new files should be written")
         self.assertIn("VALID", result.stdout)
-        self.assertIn("covered:", result.stdout)
-        self.assertIn("uncovered:", result.stdout)
+        self.assertIn("direct:", result.stdout)
+        self.assertIn("effective:", result.stdout)
         self.assertIn("autoAssign:", result.stdout)
 
     def test_check_missing_spec_exits_nonzero(self):

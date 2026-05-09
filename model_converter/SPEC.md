@@ -67,6 +67,65 @@ Required: `model.glb`, `palette` (non-empty). Everything else is optional.
 | `opacity`      | number  | 1.0     | 0.0–1.0; <1.0 enables transparent rendering.      |
 | `showInPicker` | boolean | true    | Hides this category from the sidebar color picker. |
 
+## autoAssign rules
+
+```yaml
+autoAssign:
+  - { match: "M3*",      category: Hardware }   # leaf-name glob
+  - { match: "*Bearing*", category: Linear }
+  - { match: "Frame",    category: Frame }      # bare top-level group
+```
+
+Each rule pairs a glob with a category. At runtime, every node in the GLB
+walks the rules in declaration order and takes the **first** matching rule's
+category — no fall-through, no overwrite. Per-node `category` overrides win
+before any rule is tested.
+
+### Matching: leaf names only
+
+Globs match against the **bare leaf name** of a node (`node.name` in
+`viewer.js:533`), not the full slash-joined path. Patterns like `Frame/*` or
+`Electronics/*` are dead — leaves never contain `/`. To match a top-level
+group, use the bare name (`Frame`) or a leaf-name glob that hits it
+(`Frame*`).
+
+### Descendant cascade
+
+The viewer applies categories top-down: a node without its own match
+inherits the nearest matched ancestor's category (`viewer.js:541-542`). One
+rule that hits a top-level group leaf — e.g. `{ match: "Frame", category:
+Frame }` — colors the entire `Frame` subtree, because every descendant
+inherits.
+
+This is why `--check` reports two coverage numbers:
+
+- **direct**: nodes whose own leaf name fired a rule (or whose entry has an
+  explicit `category` override). Tells you which rules are doing real
+  matching work.
+- **effective**: direct + everything covered by the cascade. Tells you what
+  the viewer will actually render. A spec where a few group-level rules hit
+  bare top-level group nodes typically reads as low direct / high
+  effective — and that's fine.
+
+A node is **truly uncovered** only when neither it nor any ancestor matched.
+Truly-uncovered subtrees render with the default material; if you see them
+in `--check`, that's where you need a new rule or override.
+
+### Ordering
+
+First-match-wins, so put **specific rules early** and broad fallbacks late:
+
+```yaml
+autoAssign:
+  - { match: "M3*",       category: Hardware }   # specific, anywhere in tree
+  - { match: "*Bearing*", category: Linear }
+  - { match: "Frame",     category: Frame }      # group-level fallback
+```
+
+A `Frame/Foo/M3_Bolt` node matches `M3*` first (leaf is `M3_Bolt`) and gets
+Hardware, even though it's inside a Frame subtree. The cascade only fills in
+nodes that match nothing.
+
 ## Option types
 
 ### Selection option (default)

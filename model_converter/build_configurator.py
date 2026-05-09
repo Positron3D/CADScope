@@ -272,21 +272,26 @@ def format_check_report(spec, spec_path, glb_path, glb_paths, validator_warnings
         lines.append("autoAssign: (none)")
 
     lines.append("")
-    covered = coverage.covered_via_autoAssign + coverage.covered_via_overrides
-    pct = covered * 100 // max(coverage.total_nodes, 1)
+    direct = coverage.covered_via_autoAssign + coverage.covered_via_overrides
+    direct_pct = direct * 100 // max(coverage.total_nodes, 1)
+    eff_pct = coverage.effective_covered * 100 // max(coverage.total_nodes, 1)
     lines.append(
-        f"covered:   {coverage.covered_via_autoAssign} via autoAssign + "
+        f"direct:    {coverage.covered_via_autoAssign} via autoAssign + "
         f"{coverage.covered_via_overrides} per-node overrides "
-        f"= {covered}/{coverage.total_nodes} ({pct}%)")
+        f"= {direct}/{coverage.total_nodes} ({direct_pct}%)")
     lines.append(
-        f"uncovered: {coverage.uncovered}"
-        + ("  (descendants inherit a category at runtime if their ancestor is matched)"
-           if coverage.uncovered else ""))
+        f"effective: {coverage.effective_covered}/{coverage.total_nodes} ({eff_pct}%)  "
+        "(direct + cascade inheritance from a matched ancestor)")
+    if coverage.truly_uncovered:
+        lines.append(
+            f"truly uncovered: {coverage.truly_uncovered}  "
+            "(neither the node nor any ancestor matched)")
 
-    if coverage.uncovered_sample:
+    if coverage.truly_uncovered_sample:
         lines.append("")
-        lines.append(f"uncovered sample (first {len(coverage.uncovered_sample)}, in tree order):")
-        for path in coverage.uncovered_sample:
+        lines.append(
+            f"truly-uncovered sample (first {len(coverage.truly_uncovered_sample)}, in tree order):")
+        for path in coverage.truly_uncovered_sample:
             lines.append(f"  {path}")
 
     lines.append("")

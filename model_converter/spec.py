@@ -331,7 +331,14 @@ def default_config(spec: Spec) -> dict:
 
 @dataclass
 class CoverageReport:
-    """Per-node coverage of an autoAssign + per-node-override pass over the GLB tree."""
+    """Per-node coverage of an autoAssign + per-node-override pass over the GLB tree.
+
+    Two senses of "covered" are tracked:
+    - Direct: the node itself matched a per-node override or an autoAssign rule.
+    - Effective: direct, OR inherits a category from a directly-matched ancestor
+      (mirrors the viewer's top-down cascade).
+    A node is "truly uncovered" only when neither it nor any ancestor matched.
+    """
     total_nodes: int
     covered_via_autoAssign: int
     covered_via_overrides: int
@@ -339,17 +346,31 @@ class CoverageReport:
     uncovered_sample: list[str]
     rule_counts: list[int]
     rule_samples: list[list[str]]
+    effective_covered: int = 0
+    truly_uncovered: int = 0
+    truly_uncovered_sample: list[str] = field(default_factory=list)
 
 
 _COVERAGE_SAMPLE_LIMIT = 10
 
 
-def _path_or_leaf_matches(path: str, pattern: str) -> bool:
-    return fnmatchcase(path, pattern) or fnmatchcase(path.split("/")[-1], pattern)
+def _leaf_matches(path: str, pattern: str) -> bool:
+    """Match a pattern against the bare leaf name of a path.
+
+    Mirrors viewer.js:533, which tests `node.name` (the leaf) against each
+    autoAssign rule. Patterns that only match via full-path syntax (e.g.
+    `Group/*`) are dead at runtime — leaves never contain slashes.
+    """
+    return fnmatchcase(path.split("/")[-1], pattern)
 
 
 def compute_coverage(spec: Spec, glb_node_paths: list[str]) -> CoverageReport:
-    """Walk autoAssign rules in order; first-match-wins per node.
+    """Walk autoAssign rules in order; first-match-wins per node leaf name.
+
+    Matches the viewer's runtime behavior: rules are tested against the bare
+    leaf name (`node.name`), not the full path. Descendant inheritance is not
+    modeled here; nodes uncovered by direct rules will still inherit their
+    nearest matched ancestor's category at render time.
 
     Per-node `category` overrides bypass autoAssign matching for that node and
     count toward `covered_via_overrides`. Per-node entries without a category
@@ -366,23 +387,43 @@ def compute_coverage(spec: Spec, glb_node_paths: list[str]) -> CoverageReport:
     uncovered_sample = []
     uncovered_count = 0
 
+    direct_match = {}
     for path in glb_node_paths:
         if path in overrides:
             covered_overrides += 1
+            direct_match[path] = True
             continue
         matched = False
         for i, rule in enumerate(spec.auto_assign):
-            if _path_or_leaf_matches(path, rule["match"]):
+            if _leaf_matches(path, rule["match"]):
                 rule_counts[i] += 1
                 if len(rule_samples[i]) < _COVERAGE_SAMPLE_LIMIT:
                     rule_samples[i].append(path)
                 covered_autoAssign += 1
                 matched = True
                 break
+        direct_match[path] = matched
         if not matched:
             uncovered_count += 1
             if len(uncovered_sample) < _COVERAGE_SAMPLE_LIMIT:
                 uncovered_sample.append(path)
+
+    # Effective coverage: walk the path tree top-down so each node inherits its
+    # nearest matched ancestor (the same cascade viewer.js applies at render time).
+    effective = {}
+    truly_uncovered_sample = []
+    truly_uncovered_count = 0
+    for path in sorted(glb_node_paths, key=lambda p: p.count("/")):
+        if direct_match[path]:
+            effective[path] = True
+            continue
+        parent = "/".join(path.split("/")[:-1])
+        effective[path] = effective.get(parent, False)
+        if not effective[path]:
+            truly_uncovered_count += 1
+            if len(truly_uncovered_sample) < _COVERAGE_SAMPLE_LIMIT:
+                truly_uncovered_sample.append(path)
+    effective_count = sum(1 for v in effective.values() if v)
 
     return CoverageReport(
         total_nodes=len(glb_node_paths),
@@ -392,6 +433,9 @@ def compute_coverage(spec: Spec, glb_node_paths: list[str]) -> CoverageReport:
         uncovered_sample=uncovered_sample,
         rule_counts=rule_counts,
         rule_samples=rule_samples,
+        effective_covered=effective_count,
+        truly_uncovered=truly_uncovered_count,
+        truly_uncovered_sample=truly_uncovered_sample,
     )
 
 
@@ -409,10 +453,9 @@ def validate_against_tree(spec: Spec, glb_node_paths: list[str]) -> list[str]:
 
     for rule in spec.auto_assign:
         match = rule["match"]
-        if not any(fnmatchcase(p, match) for p in glb_node_paths) \
-                and not any(fnmatchcase(p.split("/")[-1], match) for p in glb_node_paths):
+        if not any(fnmatchcase(p.split("/")[-1], match) for p in glb_node_paths):
             warnings.append(
-                f"autoAssign match '{match}': zero nodes in GLB tree")
+                f"autoAssign match '{match}': zero leaf-name matches in GLB tree")
 
     for i, rule in enumerate(spec.rules):
         for key in ("hide", "show"):
