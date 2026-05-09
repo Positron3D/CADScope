@@ -22,3 +22,5 @@ __pycache__/
 *.obj
 *.mtl
 
+# Legacy Cruft
+models/Positron_OLD*
