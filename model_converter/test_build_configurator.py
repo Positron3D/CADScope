@@ -23,7 +23,7 @@ class TestScaffoldMode(unittest.TestCase):
         self.tmp = tempfile.mkdtemp()
         self.glb_copy = os.path.join(self.tmp, "Positron.glb")
         shutil.copyfile(GLB_PATH, self.glb_copy)
-        self.live = os.path.join(self.tmp, "Positron.colors.json")
+        self.spec = os.path.join(self.tmp, "Positron.spec.yaml")
         self.scaffold = os.path.join(self.tmp, "Positron.scaffold.json")
 
     def tearDown(self):
@@ -49,26 +49,42 @@ class TestScaffoldMode(unittest.TestCase):
         # Positron has many parts; assert non-trivial.
         self.assertGreater(len(data["_nodes"]), 100)
 
-    def test_emits_starter_colors_when_absent(self):
-        self.assertFalse(os.path.isfile(self.live))
+    def test_emits_starter_spec_when_absent(self):
+        self.assertFalse(os.path.isfile(self.spec))
         self._run()
-        self.assertTrue(os.path.isfile(self.live))
-        with open(self.live) as f:
-            data = json.load(f)
+        self.assertTrue(os.path.isfile(self.spec))
+        import yaml
+        with open(self.spec) as f:
+            data = yaml.safe_load(f)
+        self.assertIn("model", data)
+        self.assertEqual(data["model"]["glb"], "Positron.glb")
         self.assertIn("palette", data)
-        self.assertIn("autoAssign", data)
-        self.assertIn("nodes", data)
+        self.assertEqual(len(data["palette"]), 6)
+        # autoAssign body is comments-only → parses as None.
+        self.assertIn(data.get("autoAssign"), (None, []))
         self.assertEqual(data["nodes"], {})
-        self.assertEqual(data["autoAssign"], [])
 
-    def test_does_not_overwrite_existing_colors(self):
-        custom = {"palette": {"X": {"color": "#abcdef"}}, "autoAssign": [], "nodes": {}}
-        with open(self.live, "w") as f:
-            json.dump(custom, f)
+    def test_does_not_overwrite_existing_spec(self):
+        sentinel = "model: { name: Keep, glb: Positron.glb }\npalette: { X: { color: '#abcdef' } }\n"
+        with open(self.spec, "w") as f:
+            f.write(sentinel)
         self._run()
-        with open(self.live) as f:
-            data = json.load(f)
-        self.assertEqual(data, custom)
+        with open(self.spec) as f:
+            self.assertEqual(f.read(), sentinel)
+
+    def test_stub_spec_parses_with_spec_module(self):
+        """The emitted stub is a valid spec the parser accepts unchanged."""
+        self._run()
+        sys.path.insert(0, os.path.dirname(SCRIPT))
+        try:
+            from spec import parse_file
+        finally:
+            sys.path.pop(0)
+        s = parse_file(self.spec)
+        self.assertEqual(s.glb_path, "Positron.glb")
+        self.assertIn("Main", s.palette)
+        self.assertEqual(s.auto_assign, [])
+        self.assertEqual(s.nodes, {})
 
     def test_overwrites_scaffold_each_run(self):
         """Scaffold is the reference dump — always regenerated."""
@@ -89,15 +105,15 @@ class TestScaffoldMode(unittest.TestCase):
             [sys.executable, SCRIPT, self.glb_copy, "-o", custom],
             capture_output=True, text=True, check=True,
         )
-        self.assertTrue(os.path.isfile(custom))
         self.assertTrue(os.path.isfile(os.path.join(self.tmp, "alt.scaffold.json")))
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp, "alt.spec.yaml")))
 
     def test_scaffold_only_flag_accepted(self):
-        """--scaffold-only is a no-op while scaffold is the only mode."""
+        """--scaffold-only forces scaffold + spec-stub emission even with a spec present."""
         result = self._run("--scaffold-only")
         self.assertEqual(result.returncode, 0)
         self.assertTrue(os.path.isfile(self.scaffold))
-        self.assertTrue(os.path.isfile(self.live))
+        self.assertTrue(os.path.isfile(self.spec))
 
     def test_missing_glb_returns_nonzero(self):
         result = subprocess.run(
@@ -311,21 +327,19 @@ class TestShimForcesScaffoldOnly(unittest.TestCase):
             glb = os.path.join(tmp, "Model.glb")
             spec = os.path.join(tmp, "Model.spec.yaml")
             shutil.copyfile(GLB_PATH, glb)
-            with open(spec, "w") as f:
-                f.write("model: { name: T, glb: Model.glb }\n"
+            sentinel = ("model: { name: T, glb: Model.glb }\n"
                         "palette: { Solo: { color: '#abcdef' } }\n")
+            with open(spec, "w") as f:
+                f.write(sentinel)
             shim = os.path.join(os.path.dirname(__file__), "dump_parts.py")
             subprocess.run([sys.executable, shim, glb],
                            capture_output=True, text=True, check=True)
             self.assertTrue(os.path.isfile(os.path.join(tmp, "Model.scaffold.json")))
-            self.assertTrue(os.path.isfile(os.path.join(tmp, "Model.colors.json")))
+            self.assertFalse(os.path.isfile(os.path.join(tmp, "Model.colors.json")))
             self.assertFalse(os.path.isfile(os.path.join(tmp, "Model.manifest.json")))
-            # Starter palette is multi-entry; the spec's single-entry palette
-            # would have replaced it if full mode had run.
-            with open(os.path.join(tmp, "Model.colors.json")) as f:
-                contents = json.load(f)
-            self.assertGreater(len(contents["palette"]), 1)
-            self.assertNotIn("Solo", contents["palette"])
+            # The existing spec is left alone — no stub emission overwrites it.
+            with open(spec) as f:
+                self.assertEqual(f.read(), sentinel)
 
 
 @unittest.skipUnless(os.path.isfile(GLB_PATH), "Positron GLB fixture not present")
@@ -344,8 +358,8 @@ class TestLegacyDumpPartsShim(unittest.TestCase):
             with open(os.path.join(a, "Positron.scaffold.json")) as fa, \
                  open(os.path.join(b, "Positron.scaffold.json")) as fb:
                 self.assertEqual(fa.read(), fb.read())
-            with open(os.path.join(a, "Positron.colors.json")) as fa, \
-                 open(os.path.join(b, "Positron.colors.json")) as fb:
+            with open(os.path.join(a, "Positron.spec.yaml")) as fa, \
+                 open(os.path.join(b, "Positron.spec.yaml")) as fb:
                 self.assertEqual(fa.read(), fb.read())
 
 

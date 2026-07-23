@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # ABOUTME: Builds CADScope sidecar (and Prusawire manifest) outputs from a GLB and an optional spec.
-# ABOUTME: When no sibling .spec.yaml exists, falls back to scaffold-only mode (legacy dump_parts.py behavior).
+# ABOUTME: When no sibling .spec.yaml exists, emits a stub spec.yaml the user edits to drive full mode.
 """
 Build sidecar/manifest outputs from a GLB.
 
@@ -8,7 +8,7 @@ Three modes:
 
   Scaffold mode (default when no <model>.spec.yaml is present) writes:
     <model>.scaffold.json   — always-overwritten reference dump of the GLB tree.
-    <model>.colors.json     — starter live config; only written if absent.
+    <model>.spec.yaml       — starter spec stub; only written if absent.
 
   Full mode (when <model>.spec.yaml exists) additionally writes:
     <model>.colors.json     — generated CADScope sidecar (palette/autoAssign/nodes).
@@ -33,20 +33,57 @@ from fnmatch import fnmatchcase
 from glb import read_glb_json, extract_names, build_node_paths
 
 
-def starter_live_config():
-    """A clean template for a fresh .colors.json — no part assignments."""
-    return {
-        "palette": {
-            "Main":               {"color": "#FF6600"},
-            "Accent":             {"color": "#00AAFF"},
-            "Extrusions":         {"color": "#888888", "metalness": 0.8, "showInPicker": False},
-            "Opaque Panels":      {"color": "#333333", "showInPicker": False},
-            "Transparent Panels": {"color": "#555555", "showInPicker": False},
-            "Glass":              {"color": "#ccddee", "metalness": 0.1, "opacity": 0.15, "showInPicker": False},
-        },
-        "autoAssign": [],
-        "nodes": {},
-    }
+STUB_SPEC_TEMPLATE = """\
+# Edit this file to define how the model is presented and configured.
+# The sibling .scaffold.json lists every group, part, and node path you can
+# target with the autoAssign rules and nodes block below.
+
+model:
+  name: __MODEL_NAME__
+  glb: __GLB_BASENAME__
+
+palette:
+  Main:               { color: "#FF6600" }
+  Accent:             { color: "#00AAFF" }
+  Extrusions:         { color: "#888888", metalness: 0.8, showInPicker: false }
+  Opaque Panels:      { color: "#333333", showInPicker: false }
+  Transparent Panels: { color: "#555555", showInPicker: false }
+  Glass:              { color: "#ccddee", metalness: 0.1, opacity: 0.15, showInPicker: false }
+
+# Patterns are fnmatch globs against a node's leaf name or full path.
+# Order matters — first match wins.
+autoAssign:
+  # Examples — uncomment and edit:
+  # - { match: "M3x*",     category: Extrusions }
+  # - { match: "*Panel*",  category: "Opaque Panels" }
+  # - { match: "*Window*", category: "Transparent Panels" }
+
+# Per-node overrides — displayName, category, hidden, visible (when/unless),
+# stl (download paths), visualOnly. Paths come from .scaffold.json's _nodes.
+nodes: {}
+"""
+
+
+def starter_spec_text(glb_basename):
+    """Render the stub .spec.yaml body for a freshly-scaffolded GLB."""
+    stem = re.sub(r"\.glb$", "", glb_basename, flags=re.IGNORECASE)
+    model_name = stem.replace("_", " ")
+    return (
+        STUB_SPEC_TEMPLATE
+        .replace("__MODEL_NAME__", model_name)
+        .replace("__GLB_BASENAME__", glb_basename)
+    )
+
+
+def emit_starter_spec(spec_path, glb_basename):
+    """Write a stub spec.yaml at spec_path if one does not already exist."""
+    if os.path.exists(spec_path):
+        print(f"Spec already exists, leaving alone: {spec_path}")
+        return False
+    with open(spec_path, "w") as f:
+        f.write(starter_spec_text(glb_basename))
+    print(f"Wrote starter spec: {spec_path}")
+    return True
 
 
 def derive_paths(glb_path, base_override):
@@ -62,18 +99,6 @@ def derive_paths(glb_path, base_override):
         scaffold_path = live_path + ".scaffold.json"
 
     return live_path, scaffold_path
-
-
-def emit_starter_colors(live_path):
-    """Write a starter colors.json if one does not already exist at the path."""
-    if os.path.exists(live_path):
-        print(f"Live config already exists, leaving alone: {live_path}")
-        return False
-    with open(live_path, "w") as f:
-        json.dump(starter_live_config(), f, indent=2)
-        f.write("\n")
-    print(f"Wrote starter live config: {live_path}")
-    return True
 
 
 def emit_scaffold(glb_json, scaffold_path):
@@ -341,9 +366,9 @@ def main():
     print(f"Wrote scaffold ({n_groups} groups, {n_parts} parts, {n_nodes} nodes): {scaffold_path}")
 
     if scaffold_only or not has_spec:
-        emit_starter_colors(live_path)
+        emit_starter_spec(spec_path, os.path.basename(glb_path))
         if not has_spec:
-            print('Copy paths from _nodes into the live "nodes" map; copy names from _groups/_parts as autoAssign glob inputs.')
+            print(f"Edit {spec_path} (palette, autoAssign, nodes) then rerun to generate colors.json + manifest.json.")
         return 0
 
     from spec import parse_file, validate_against_tree

@@ -60,7 +60,7 @@ python3 model_converter/extract_step_colors.py input.step /tmp/colors.json
 | `extract_step_colors.py` | Parses STEP text for color-to-part mappings (Python 3, no dependencies) |
 | `step_to_glb.py` | FreeCAD script: STEP import, tessellation, uncompressed GLB export |
 | `blender_export.py` | Blender script: GLB import, name cleaning, color application, Draco export |
-| `build_configurator.py` | Generates `.colors.json` (live config) and `.scaffold.json` (reference) sidecars from a GLB. With a sibling `.spec.yaml`, also emits a Prusawire-Configurator manifest — see `model_converter/SPEC.md`. |
+| `build_configurator.py` | Two-pass authoring tool: first run emits `.scaffold.json` (reference) + a starter `.spec.yaml` from a GLB. Once the spec is filled in, the next run generates `.colors.json` (live config) and the Prusawire-Configurator manifest — see `model_converter/SPEC.md`. |
 | `dump_parts.py` | Backwards-compatibility shim that calls `build_configurator.py --scaffold-only`. |
 
 ## Color Sets
@@ -117,19 +117,25 @@ python3 -m venv model_converter/.venv
 model_converter/.venv/bin/pip install -r model_converter/requirements.txt
 ```
 
-Run `build_configurator.py` to generate the sidecar files from a GLB:
+Run `build_configurator.py` to generate the sidecar files from a GLB. The tool runs in two passes.
+
+**First run** (no sibling `model.spec.yaml`) writes:
+
+- **`model.scaffold.json`** (reference) — `_groups`, `_parts`, and `_nodes` (path → current name, in tree order). Always overwritten. Use this as a paste source while editing the spec.
+- **`model.spec.yaml`** (starter spec) — pre-seeded palette, empty `autoAssign`, and an empty `nodes` map. Only written if absent, so your edits are safe to re-run over.
 
 ```sh
 model_converter/.venv/bin/python model_converter/build_configurator.py model.glb
-model_converter/.venv/bin/python model_converter/build_configurator.py model.glb -o out.json
 ```
 
-The tool writes:
+Then edit `model.spec.yaml` — define palette categories, write `autoAssign` glob rules against names from `_groups`/`_parts`, and add per-node overrides keyed by paths from `_nodes`.
 
-- **`model.colors.json`** (live config) — a clean starter template. Skipped if the file already exists, so your edits are safe to re-run over.
-- **`model.scaffold.json`** (reference) — `_groups`, `_parts`, and `_nodes` (path → current name, in tree order). Always overwritten. Copy from this file while editing the live one — paths into the `nodes` map, names into `autoAssign` glob inputs.
+**Second run** (with the spec present) writes:
 
-For configurable models (where the same GLB ships in different combinations of parts), drop a `model.spec.yaml` next to the GLB. The generator then also emits `model.manifest.json` for the Prusawire-Configurator. Schema reference: `model_converter/SPEC.md`.
+- **`model.colors.json`** (live config) — the CADScope sidecar consumed by the viewer.
+- **`model.manifest.json`** — Prusawire-Configurator manifest, for configurable models that ship the same GLB in different part combinations.
+
+Both are regenerated from the spec on every run. Validate without writing via `build_configurator.py --check model.glb`. Schema reference: `model_converter/SPEC.md`.
 
 ## Future Possibilities...
 
