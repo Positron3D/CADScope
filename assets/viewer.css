@@ -468,7 +468,6 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .tree-isolate-btn {
-  margin-left: auto;
   opacity: 0;
   font-size: 22px;
   line-height: 1;
