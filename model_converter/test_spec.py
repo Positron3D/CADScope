@@ -144,6 +144,126 @@ class TestParse(unittest.TestCase):
         self.assertEqual(s.options["hexCowl"]["type"], "bool")
         self.assertIs(s.options["hexCowl"]["default"], True)
 
+    def test_option_description_parsed(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              carriage:
+                label: Carriage
+                description: "Pick the carriage variant."
+                choices:
+                  - { id: xol, label: Xol, default: true }
+        """).strip()
+        s = parse(text)
+        self.assertEqual(s.options["carriage"]["description"], "Pick the carriage variant.")
+
+    def test_choice_description_parsed(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              carriage:
+                label: Carriage
+                choices:
+                  - { id: xol, label: Xol, description: "Original.", default: true }
+                  - { id: omron, label: Omron }
+        """).strip()
+        s = parse(text)
+        choices = s.options["carriage"]["choices"]
+        self.assertEqual(choices[0]["description"], "Original.")
+        self.assertNotIn("description", choices[1])
+
+    def test_bool_option_description_parsed(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              hexCowl:
+                label: Hex
+                description: "Optional patterned top cowl."
+                type: bool
+                default: false
+        """).strip()
+        s = parse(text)
+        self.assertEqual(s.options["hexCowl"]["description"], "Optional patterned top cowl.")
+
+    def test_selection_type_defaults_to_radio(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              carriage:
+                choices:
+                  - { id: xol, default: true }
+        """).strip()
+        s = parse(text)
+        self.assertEqual(s.options["carriage"]["type"], "radio")
+
+    def test_selection_type_dropdown_passes_through(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              carriage:
+                type: dropdown
+                choices:
+                  - { id: xol, default: true }
+        """).strip()
+        s = parse(text)
+        self.assertEqual(s.options["carriage"]["type"], "dropdown")
+
+    def test_selection_type_unknown_passes_through(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              carriage:
+                type: image_grid
+                choices:
+                  - { id: xol, default: true }
+        """).strip()
+        s = parse(text)
+        self.assertEqual(s.options["carriage"]["type"], "image_grid")
+
+    def test_option_description_must_be_string(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              carriage:
+                description: 42
+                choices:
+                  - { id: xol, default: true }
+        """).strip()
+        with self.assertRaises(SpecError):
+            parse(text)
+
+    def test_choice_description_must_be_string(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              carriage:
+                choices:
+                  - { id: xol, description: 42, default: true }
+        """).strip()
+        with self.assertRaises(SpecError):
+            parse(text)
+
+    def test_option_type_must_be_string(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              carriage:
+                type: 42
+                choices:
+                  - { id: xol, default: true }
+        """).strip()
+        with self.assertRaises(SpecError):
+            parse(text)
+
 
 @unittest.skipUnless(YAML_AVAILABLE, "PyYAML not installed")
 class TestEvaluateVisible(unittest.TestCase):

@@ -33,6 +33,8 @@ autoAssign:                # optional; in-order, first match wins
 options:                   # optional; user-facing choices
   optionId:                # see "Option types" below
     label: "Label"
+    description: "..."     # optional; help copy rendered beside the question
+    type: radio            # bool|radio|dropdown; unknown values pass through
     choices: [...]
 
 compatibility:             # optional; cross-option warnings (informational)
@@ -128,27 +130,43 @@ nodes that match nothing.
 
 ## Option types
 
-### Selection option (default)
+Every option carries an optional `label:` (defaults to the option id), an
+optional `description:` (free-text help copy the configurator UI may render
+beside the question), and a `type:` that hints the desired widget. Recognized
+`type:` values are listed below; unknown values pass through to `manifest.json`
+verbatim so future configurator UIs can introduce new widgets (`tabs`,
+`image_grid`, etc.) without bumping the spec schema.
+
+### Selection option
 
 ```yaml
 carriage:
   label: "Carriage"
+  description: "Which carriage variant ships on the gantry."
   choices:
-    - { id: xol,   label: "Xol Carriage", default: true }
-    - { id: omron, label: "Omron Carriage" }
+    - { id: xol,   label: "Xol Carriage",
+        description: "Original design. Aluminium body, magnetic probe mount.",
+        default: true }
+    - { id: omron, label: "Omron Carriage",
+        description: "Drop-in upgrade using the Omron TL-Q5MB1 inductive probe." }
 ```
 
-`id` is required; `label` defaults to `id`; one choice may be `default: true`. If
-no choice is flagged default, the first is used.
+`id` is required on each choice; `label` defaults to `id`; `description` is
+optional. One choice may be `default: true`; if none is flagged, the first is
+used. `type:` defaults to `radio`. Set `type: dropdown` to hint a collapsed
+`<select>` widget — typical for long choice lists.
 
 ### Boolean option
 
 ```yaml
 hexCowl:
   label: "Hex multi-colour cowl?"
+  description: "Adds the optional patterned top cowl. Heavier; needs 4 extra M3x10 screws."
   type: bool
   default: false
 ```
+
+`description:` is optional and renders the same way as on selection options.
 
 ## Node entries
 

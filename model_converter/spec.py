@@ -174,11 +174,26 @@ def _parse_options(raw):
     for opt_id, body in raw.items():
         if not isinstance(body, dict):
             raise SpecError(f"options.{opt_id}: expected a mapping")
+
+        description = body.get("description")
+        if description is not None and not isinstance(description, str):
+            raise SpecError(f"options.{opt_id}: 'description' must be a string")
+
         if body.get("type") == "bool":
-            label = body.get("label", opt_id)
-            default = bool(body.get("default", False))
-            out[opt_id] = {"label": label, "type": "bool", "default": default}
+            entry = {
+                "label": body.get("label", opt_id),
+                "type": "bool",
+                "default": bool(body.get("default", False)),
+            }
         else:
+            raw_type = body.get("type")
+            if raw_type is None:
+                emitted_type = "radio"
+            elif isinstance(raw_type, str):
+                emitted_type = raw_type
+            else:
+                raise SpecError(f"options.{opt_id}: 'type' must be a string")
+
             choices = body.get("choices")
             if not isinstance(choices, list) or not choices:
                 raise SpecError(
@@ -191,16 +206,27 @@ def _parse_options(raw):
                 if not isinstance(cid, str):
                     raise SpecError(
                         f"options.{opt_id}.choices[{j}]: 'id' must be a string")
-                parsed_choices.append({
+                choice_out = {
                     "id": cid,
                     "label": choice.get("label", cid),
                     "default": bool(choice.get("default", False)),
-                })
-            out[opt_id] = {
+                }
+                c_desc = choice.get("description")
+                if c_desc is not None:
+                    if not isinstance(c_desc, str):
+                        raise SpecError(
+                            f"options.{opt_id}.choices[{j}]: 'description' must be a string")
+                    choice_out["description"] = c_desc
+                parsed_choices.append(choice_out)
+            entry = {
                 "label": body.get("label", opt_id),
-                "type": "select",
+                "type": emitted_type,
                 "choices": parsed_choices,
             }
+
+        if description is not None:
+            entry["description"] = description
+        out[opt_id] = entry
     return out
 
 

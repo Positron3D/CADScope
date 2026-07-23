@@ -203,6 +203,87 @@ options:
         self.assertEqual(manifest["glb"], "Model.glb")
         self.assertIn("carriage", manifest["configOptions"])
 
+    def test_manifest_carries_option_and_choice_descriptions(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Main: { color: '#fff' } }
+options:
+  carriage:
+    label: Carriage
+    description: "Which carriage variant ships."
+    choices:
+      - { id: a, label: A, description: "Original.", default: true }
+      - { id: b, label: B }
+  hexCowl:
+    label: Hex
+    description: "Patterned top cowl."
+    type: bool
+    default: false
+""")
+        subprocess.run([sys.executable, SCRIPT, self.glb],
+                       capture_output=True, text=True, check=True)
+        with open(os.path.join(self.tmp, "Model.manifest.json")) as f:
+            manifest = json.load(f)
+        carriage = manifest["configOptions"]["carriage"]
+        self.assertEqual(carriage["description"], "Which carriage variant ships.")
+        self.assertEqual(carriage["choices"][0]["description"], "Original.")
+        self.assertNotIn("description", carriage["choices"][1])
+        self.assertEqual(manifest["configOptions"]["hexCowl"]["description"],
+                         "Patterned top cowl.")
+
+    def test_manifest_default_selection_type_is_radio(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Main: { color: '#fff' } }
+options:
+  carriage:
+    choices:
+      - { id: a, default: true }
+""")
+        subprocess.run([sys.executable, SCRIPT, self.glb],
+                       capture_output=True, text=True, check=True)
+        with open(os.path.join(self.tmp, "Model.manifest.json")) as f:
+            manifest = json.load(f)
+        self.assertEqual(manifest["configOptions"]["carriage"]["type"], "radio")
+
+    def test_manifest_propagates_dropdown_and_unknown_type(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Main: { color: '#fff' } }
+options:
+  short:
+    type: dropdown
+    choices:
+      - { id: a, default: true }
+  custom:
+    type: image_grid
+    choices:
+      - { id: b, default: true }
+""")
+        subprocess.run([sys.executable, SCRIPT, self.glb],
+                       capture_output=True, text=True, check=True)
+        with open(os.path.join(self.tmp, "Model.manifest.json")) as f:
+            manifest = json.load(f)
+        self.assertEqual(manifest["configOptions"]["short"]["type"], "dropdown")
+        self.assertEqual(manifest["configOptions"]["custom"]["type"], "image_grid")
+
+    def test_manifest_omits_description_when_absent(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Main: { color: '#fff' } }
+options:
+  carriage:
+    choices:
+      - { id: a, default: true }
+""")
+        subprocess.run([sys.executable, SCRIPT, self.glb],
+                       capture_output=True, text=True, check=True)
+        with open(os.path.join(self.tmp, "Model.manifest.json")) as f:
+            manifest = json.load(f)
+        opt = manifest["configOptions"]["carriage"]
+        self.assertNotIn("description", opt)
+        self.assertNotIn("description", opt["choices"][0])
+
     def test_unknown_node_path_emits_warning(self):
         self._write_spec("""
 model: { name: T, glb: Model.glb }
