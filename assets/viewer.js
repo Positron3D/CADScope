@@ -423,7 +423,7 @@ function extendPath(parentPath, childName) {
 }
 
 // Resolve a sidecar into ready-to-query lookup tables.
-// palette: name -> { color, metalness, opacity, showInPicker }
+// palette: name -> { color, metalness, opacity, showInPicker, showInTree }
 // autoAssign: ordered [{ category, regex }] — first match wins
 // nodesByPath: full slash-joined path -> entry
 // nodesByLeaf: bare-leaf key -> entry (legacy/forgiveness path)
@@ -440,6 +440,7 @@ function buildSidecarLookups(colorSet) {
         metalness: raw.metalness ?? 0.0,
         opacity: raw.opacity ?? 1.0,
         showInPicker: raw.showInPicker !== false,
+        showInTree: raw.showInTree !== false,
       });
     }
   }
@@ -540,6 +541,8 @@ function applyColorSet(lookups, model) {
   const warnedMissing = new Set();
   function walk(node, path, inheritedCategory) {
     const myCategory = resolveCategory(node, path) || inheritedCategory;
+    // Stash effective category for downstream consumers (tree-build filter, etc).
+    if (myCategory) node.userData.cadscope_category = myCategory;
     if (node.isMesh && myCategory) {
       if (resolved.has(myCategory)) {
         const cat = resolved.get(myCategory);
@@ -887,6 +890,26 @@ function buildTree(sceneRoot, rootLabel, pendingState) {
   }
 
   function createTreeItem(obj, parentElement, depth = 0) {
+    // Tree-hide filter: drop this node if its per-node sidecar entry sets
+    // showInTree: false, or if its effective palette category has
+    // showInTree: false. Children promote up to parentElement at the same
+    // depth so the tree stays connected.
+    const path = pathOf(obj);
+    const sidecarEntry = lookups ? lookupNode(lookups, path) : null;
+    const cat = obj.userData?.cadscope_category;
+    const hiddenFromTree =
+      sidecarEntry?.showInTree === false ||
+      (cat && lookups?.palette?.get(cat)?.showInTree === false);
+
+    if (hiddenFromTree) {
+      if (obj.children) {
+        for (const child of obj.children) {
+          createTreeItem(child, parentElement, depth);
+        }
+      }
+      return;
+    }
+
     const itemDiv = document.createElement('div');
     itemDiv.className = 'tree-item';
     objToTreeItem.set(obj, itemDiv);

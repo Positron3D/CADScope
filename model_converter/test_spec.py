@@ -264,13 +264,63 @@ class TestParse(unittest.TestCase):
         with self.assertRaises(SpecError):
             parse(text)
 
+    def test_palette_show_in_tree_false_preserved(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette:
+              Main:   { color: '#fff' }
+              Hidden: { color: '#222', showInTree: false }
+        """).strip()
+        s = parse(text)
+        self.assertIs(s.palette["Hidden"]["showInTree"], False)
+        self.assertNotIn("showInTree", s.palette["Main"])
+
+    def test_palette_show_in_tree_must_be_bool(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette:
+              Hidden: { color: '#222', showInTree: "no" }
+        """).strip()
+        with self.assertRaises(SpecError):
+            parse(text)
+
+    def test_node_show_in_tree_false_parsed(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            nodes:
+              Foo: { showInTree: false }
+        """).strip()
+        s = parse(text)
+        self.assertIs(s.nodes["Foo"].show_in_tree, False)
+
+    def test_node_show_in_tree_default_true(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            nodes:
+              Foo: { displayName: "Foo Display" }
+        """).strip()
+        s = parse(text)
+        self.assertIs(s.nodes["Foo"].show_in_tree, True)
+
+    def test_node_show_in_tree_must_be_bool(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            nodes:
+              Foo: { showInTree: "no" }
+        """).strip()
+        with self.assertRaises(SpecError):
+            parse(text)
+
 
 @unittest.skipUnless(YAML_AVAILABLE, "PyYAML not installed")
 class TestEvaluateVisible(unittest.TestCase):
     def _n(self, **kw):
         defaults = dict(display_name=None, category=None, hidden=False,
                         visible_when=None, visible_unless=None,
-                        stl=None, visual_only=False)
+                        stl=None, visual_only=False, show_in_tree=True)
         defaults.update(kw)
         return NodeSpec(**defaults)
 

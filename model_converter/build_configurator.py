@@ -161,6 +161,8 @@ def build_colors_json(spec):
             entry["category"] = node.category
         if not evaluate_visible(node, cfg):
             entry["hidden"] = True
+        if not node.show_in_tree:
+            entry["showInTree"] = False
         if entry:
             nodes_out[path] = entry
     return {

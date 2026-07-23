@@ -76,6 +76,7 @@ class NodeSpec:
     visible_unless: dict | None = None
     stl: list[str] | None = None
     visual_only: bool = False
+    show_in_tree: bool = True
 
 
 @dataclass
@@ -115,6 +116,10 @@ def parse(text: str) -> Spec:
     for cat, entry in palette.items():
         if not isinstance(entry, dict):
             raise SpecError(f"palette.{cat}: expected a mapping")
+        if "showInTree" in entry and not isinstance(entry["showInTree"], bool):
+            raise SpecError(f"palette.{cat}: 'showInTree' must be a bool")
+        if "showInPicker" in entry and not isinstance(entry["showInPicker"], bool):
+            raise SpecError(f"palette.{cat}: 'showInPicker' must be a bool")
 
     auto_assign = _parse_auto_assign(raw.get("autoAssign"), palette)
     options = _parse_options(raw.get("options"))
@@ -284,6 +289,9 @@ def _parse_nodes(raw, palette):
             stl = list(stl_raw)
         else:
             raise SpecError(f"nodes.{path}.stl: must be a string or list of strings")
+        show_in_tree_raw = body.get("showInTree")
+        if show_in_tree_raw is not None and not isinstance(show_in_tree_raw, bool):
+            raise SpecError(f"nodes.{path}: 'showInTree' must be a bool")
         out[path] = NodeSpec(
             display_name=body.get("displayName"),
             category=category,
@@ -292,6 +300,7 @@ def _parse_nodes(raw, palette):
             visible_unless=dict(unless) if unless else None,
             stl=stl,
             visual_only=bool(body.get("visualOnly", False)),
+            show_in_tree=True if show_in_tree_raw is None else show_in_tree_raw,
         )
     return out
 

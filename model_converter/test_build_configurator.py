@@ -295,6 +295,47 @@ nodes:
                                 capture_output=True, text=True, check=True)
         self.assertIn("Definitely_Does_Not_Exist", result.stderr)
 
+    def test_palette_show_in_tree_round_trips_to_colors_json(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette:
+  Main:   { color: '#fff' }
+  Hidden: { color: '#222', showInTree: false }
+""")
+        subprocess.run([sys.executable, SCRIPT, self.glb],
+                       capture_output=True, text=True, check=True)
+        with open(os.path.join(self.tmp, "Model.colors.json")) as f:
+            colors = json.load(f)
+        self.assertIs(colors["palette"]["Hidden"]["showInTree"], False)
+        self.assertNotIn("showInTree", colors["palette"]["Main"])
+
+    def test_node_show_in_tree_false_emitted_in_colors_json(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Main: { color: '#fff' } }
+nodes:
+  Some_Hidden_Path: { showInTree: false }
+""")
+        subprocess.run([sys.executable, SCRIPT, self.glb],
+                       capture_output=True, text=True, check=True)
+        with open(os.path.join(self.tmp, "Model.colors.json")) as f:
+            colors = json.load(f)
+        self.assertIn("Some_Hidden_Path", colors["nodes"])
+        self.assertIs(colors["nodes"]["Some_Hidden_Path"]["showInTree"], False)
+
+    def test_node_show_in_tree_default_not_emitted(self):
+        self._write_spec("""
+model: { name: T, glb: Model.glb }
+palette: { Main: { color: '#fff' } }
+nodes:
+  Some_Path: { displayName: "Visible" }
+""")
+        subprocess.run([sys.executable, SCRIPT, self.glb],
+                       capture_output=True, text=True, check=True)
+        with open(os.path.join(self.tmp, "Model.colors.json")) as f:
+            colors = json.load(f)
+        self.assertNotIn("showInTree", colors["nodes"]["Some_Path"])
+
 
 @unittest.skipUnless(YAML_AVAILABLE and os.path.isfile(GLB_PATH),
                      "PyYAML or GLB fixture not present")
