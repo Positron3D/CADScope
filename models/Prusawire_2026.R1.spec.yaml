@@ -1,0 +1,187 @@
+# Edit this file to define how the model is presented and configured.
+# The sibling .scaffold.json lists every group, part, and node path you can
+# target with the autoAssign rules and nodes block below.
+
+model:
+  name: Prusawire 2026.R1
+  glb: Prusawire_2026.R1.glb
+
+palette:
+  Main:               { color: "#222222" }                                            # primary printed parts
+  Accent:             { color: "#AD2723" }                                            # user-pickable contrast
+  Frame:              { color: "#3a3a3a", metalness: 0.7, showInPicker: false }                            # Misumi extrusions, linear rails
+  Hardware:           { color: "#888888", metalness: 0.9, showInPicker: false }       # NEMA cans, ballscrews, visible motors
+  Bed:                { color: "#cc8800", showInPicker: false }                       # heated bed
+  Electronics:        { color: "#1d3b2a", metalness: 0.5, showInPicker: false }       # PCB substrates, mainboards
+  Glass:              { color: "#ccddee", metalness: 0.1, opacity: 0.15, showInPicker: false }
+  Hidden:             { showInPicker: false, showInTree: false }    # rendered but absent from the tree
+
+# Patterns are fnmatch globs against a node's leaf name or full path.
+# Order matters — first match wins.
+autoAssign:
+  # ---- Fasteners (M-prefix sizes catch nearly all; a couple of catch-alls
+  #      pick up DIN-named screws and Grub_screw* parts) ----------------
+  - { match: "M2*",                category: Hardware }
+  - { match: "M3*",                category: Hardware }
+  - { match: "M4*",                category: Hardware }
+  - { match: "M5*",                category: Hardware }
+  - { match: "*Screw*",            category: Hardware }   # DIN-named screws
+  - { match: "*screw*",            category: Hardware }   # Grub_screw*
+
+  # ---- Bearings, bushings, linear motion internals --------------------
+  #- { match: "Bearing_*",          category: Hidden }
+  #- { match: "F623_Bearing*",      category: Hidden }
+  #- { match: "LM*",                category: Hidden }   # LM linear bearings + LM_Bearings group
+
+  # ---- STEP-import noise (compound bodies, logos, library parts) ------
+  - { match: "COMPOU*",            category: Hidden }
+  - { match: "SOLID*",             category: Hidden }
+  - { match: "Cylinder*",          category: Hidden }
+  - { match: "LOGO*",              category: Hidden }
+  - { match: "User_Library-*",     category: Hidden }
+  - { match: "Extruded_*",         category: Hidden }   # PCB extruded substrate geometry
+
+  # ---- Electronics: SMD package families ------------------------------
+  - { match: "CAPC*",              category: Hidden }
+  - { match: "RESC*",              category: Hidden }
+  - { match: "QFN*",               category: Hidden }
+  - { match: "SOT*",               category: Hidden }
+  - { match: "SOD*",               category: Hidden }
+  - { match: "DO*",                category: Hidden }
+  - { match: "INDC*",              category: Hidden }
+  - { match: "LED*",               category: Hidden }
+  - { match: "HDR*",               category: Hidden }
+  - { match: "TSW*",               category: Hidden }
+  - { match: "SRN*",               category: Hidden }
+  - { match: "MR*",                category: Hidden }
+  - { match: "XH*",                category: Hidden }
+  - { match: "SD*",                category: Hidden }
+  - { match: "ADXL*",              category: Hidden }
+  - { match: "LDO*",               category: Hidden }
+  - { match: "GT*",                category: Hidden }
+  - { match: "CM*",                category: Hidden }
+  - { match: "EASUN*",             category: Hidden }
+  #- { match: "ZF_Electronics_*",   category: Hidden }
+  - { match: "KF*",                category: Hidden }
+  - { match: "SL*",                category: Hidden }
+
+  # ---- Connectors, wiring, generic motor/encoder internals ------------
+  #- { match: "Crimped_*",          category: Hidden }
+  - { match: "Camera_Connector*",  category: Hidden }
+  - { match: "Display_Connector*", category: Hidden }
+  #- { match: "Microphone_*",       category: Hidden }
+  - { match: "*PIN_HEADER*",       category: Hidden }
+  - { match: "*USB*PORTS*",        category: Hidden }
+  - { match: "PTFE_*",             category: Hidden }
+  #- { match: "VHB*",               category: Hidden }
+  #- { match: "Rubber_*",           category: Hidden }
+  #- { match: "Switch_*",           category: Hidden }
+  - { match: "Needle_*",           category: Hidden }
+
+  # ---- NEMA motor cans (cosmetic, fine to hide; you can flip these
+  #      to Hardware later if you want them visible) --------------------
+  #- { match: "NEMA*",              category: Hidden }
+
+  # ---- Structural frame parts -----------------------------------------
+  #- { match: "MGN*_Rail*",         category: Frame }
+  #- { match: "MGN*_Carriage*",     category: Frame }
+  #- { match: "Linear_Rod*",        category: Frame }
+  #- { match: "Misumi_*",           category: Frame }
+
+  # ---- Printed accent parts (a_ prefix naming convention) -------------
+  - { match: "a_belt_clip_*",               category: Accent }
+  - { match: "a_front_grill_logo_plates_*", category: Accent }
+  - { match: "a_heat_set_practice_*",       category: Accent }
+  - { match: "a_lcd_knob_*",                category: Accent }
+  - { match: "a_motor_mounts_*",            category: Accent }
+  - { match: "a_rubber_foot_block_*",       category: Accent }
+  - { match: "a_x_block_*",                 category: Accent }
+  - { match: "a_x_end_clip_*",              category: Accent }
+  - { match: "a_z_block_*",                 category: Accent }
+  - { match: "a_z_end_clip_*",              category: Accent }
+
+  # ---- Catch-all for other printed/visible parts ----------------------
+  # No convention emerged yet for non-accent printed parts. Add positive
+  # rules here (e.g. "{ match: 'pp-*', category: Main }") as patterns stabilize.
+
+# User-facing configuration choices. Defaults pick the most common SKU.
+#
+# Variants present in this composite GLB (each is a candidate option):
+#
+#   toolhead       Afterburner_Assembly_With_Owl  |  Stealthburner
+#                  (under XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage)
+#
+#   hotend         Revo_Voron (inside Stealthburner)
+#                  Dragon_Hotend003, E3D_V6_All_Metal_Hotend,
+#                  Phaetus_Rapido_Hotend_High_Flow025
+#                  (locations TBD — search scaffold.json)
+#
+#   probe          SuperPINDA_v002 / _v003 / _v1 / _v004
+#                  (under .../X_Carriage/SuperPINDA_v004)
+#
+#   pulley_size    16T  |  20T
+#                  Affects: XZ_Belts (16T002/20T002),
+#                           XZ_Block_-_Left/-_Right_-_16T/-_20T,
+#                           X_Motor_-_16T/-_20T, Y_Motor_16T/_20T,
+#                           Z_Motor_-_16T/(plus one more)
+#
+#   mainboard      Rambo_Assembly  |  SKR_Assembly
+#                  (under Electronics/Mainboards)
+#
+#   toolhead_board BTT_SB2209_USB_Adapter  |  Nitehawk-SB_USB
+#                  (under Electronics/Toolhead_Boards)
+#
+#   feet           Feet_Assembly / 001 / 002 / 003
+#                  (under Frame/Feet_Assembly_(Assembly))
+#
+# Fill the `options:` block below when you're ready to expose any of these.
+# Each variant becomes a node-level `visible: { when: { <option>: <choice> } }`
+# entry in the `nodes:` block, gated by the option chosen here.
+options: {}
+
+# Per-node overrides — displayName, category, hidden, visible (when/unless),
+# stl (download paths), visualOnly. Paths come from .scaffold.json's _nodes.
+nodes:
+  # Top-level group labels.
+  Accessories:  { displayName: "Accessories" }
+  Electronics:  { displayName: "Electronics" }
+  Frame:        { displayName: "Frame" }
+  Panels:       { displayName: "Panels" }
+  XZ_Axis:      { displayName: "XZ Axis" }
+  Y_Axis:       { displayName: "Y Axis" }
+
+  # Accessories sub-assemblies.
+  Accessories/Front_Grill_&_Screen:                       { displayName: "Front Grill & Screen" }
+  Accessories/Prusawire_Supplemental_Badge_(Combined):    { displayName: "Badge" }
+  Accessories/Spool_Holder:                               { displayName: "Spool Holder" }
+
+  # Electronics sub-assemblies.
+  Electronics/Mainboards:        { displayName: "Mainboards" }
+  Electronics/Power:             { displayName: "Power" }
+  Electronics/Raspberry_Pi:      { displayName: "Raspberry Pi" }
+  Electronics/Toolhead_Boards:   { displayName: "Toolhead Boards" }
+
+  # Frame sub-assemblies.
+  Frame/Feet_Assembly_(Assembly):    { displayName: "Feet" }
+  Frame/Prusa_MK4_Frame_Assembly:    { displayName: "Prusa MK3/MK4 Frame" }
+
+  # Panels sub-assemblies.
+  Panels/FrontDeckAssembly:      { displayName: "Front Deck Panel" }
+  Panels/Rear_Panel_Assembly:    { displayName: "Rear Deck Panel" }
+
+  # XZ Axis sub-assemblies.
+  XZ_Axis/Door_Puller:                           { displayName: "Door Puller" }
+  XZ_Axis/Door_Puller_Idler:                     { displayName: "Door Puller Idler" }
+  XZ_Axis/XZ_Belts_(Assembly):                   { displayName: "XZ Belts" }
+  XZ_Axis/XZ_Gantry:                             { displayName: "XZ Gantry" }
+  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly:            { displayName: "XZ Axis Asssembly" }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly:             { displayName: "X Axis" }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage:  { displayName: "X Carriage" }
+
+  # Y Axis sub-assemblies.
+  Y_Axis/Bed_Assembly_(1):       { displayName: "Bed" }
+  Y_Axis/Left_Rod_Assembly:      { displayName: "Left Rod" }
+  Y_Axis/Right_Rod_Assembly:     { displayName: "Right Rod" }
+  Y_Axis/Y_Belts:                { displayName: "Y Belts" }
+  Y_Axis/Y_Idler_Assembly:       { displayName: "Y Idler" }
+  Y_Axis/Y_Motors_Combined:      { displayName: "Y Motor" }

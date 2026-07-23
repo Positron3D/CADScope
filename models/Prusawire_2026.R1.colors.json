@@ -1,22 +1,28 @@
 {
   "palette": {
     "Main": {
-      "color": "#FF6600"
+      "color": "#222222"
     },
     "Accent": {
-      "color": "#00AAFF"
+      "color": "#AD2723"
     },
-    "Extrusions": {
+    "Frame": {
+      "color": "#3a3a3a",
+      "metalness": 0.7,
+      "showInPicker": false
+    },
+    "Hardware": {
       "color": "#888888",
-      "metalness": 0.8,
+      "metalness": 0.9,
       "showInPicker": false
     },
-    "Opaque Panels": {
-      "color": "#333333",
+    "Bed": {
+      "color": "#cc8800",
       "showInPicker": false
     },
-    "Transparent Panels": {
-      "color": "#555555",
+    "Electronics": {
+      "color": "#1d3b2a",
+      "metalness": 0.5,
       "showInPicker": false
     },
     "Glass": {
@@ -24,8 +30,300 @@
       "metalness": 0.1,
       "opacity": 0.15,
       "showInPicker": false
+    },
+    "Hidden": {
+      "showInPicker": false,
+      "showInTree": false
     }
   },
-  "autoAssign": [],
-  "nodes": {}
+  "autoAssign": [
+    {
+      "match": "M2*",
+      "category": "Hardware"
+    },
+    {
+      "match": "M3*",
+      "category": "Hardware"
+    },
+    {
+      "match": "M4*",
+      "category": "Hardware"
+    },
+    {
+      "match": "M5*",
+      "category": "Hardware"
+    },
+    {
+      "match": "*Screw*",
+      "category": "Hardware"
+    },
+    {
+      "match": "*screw*",
+      "category": "Hardware"
+    },
+    {
+      "match": "COMPOU*",
+      "category": "Hidden"
+    },
+    {
+      "match": "SOLID*",
+      "category": "Hidden"
+    },
+    {
+      "match": "Cylinder*",
+      "category": "Hidden"
+    },
+    {
+      "match": "LOGO*",
+      "category": "Hidden"
+    },
+    {
+      "match": "User_Library-*",
+      "category": "Hidden"
+    },
+    {
+      "match": "Extruded_*",
+      "category": "Hidden"
+    },
+    {
+      "match": "CAPC*",
+      "category": "Hidden"
+    },
+    {
+      "match": "RESC*",
+      "category": "Hidden"
+    },
+    {
+      "match": "QFN*",
+      "category": "Hidden"
+    },
+    {
+      "match": "SOT*",
+      "category": "Hidden"
+    },
+    {
+      "match": "SOD*",
+      "category": "Hidden"
+    },
+    {
+      "match": "DO*",
+      "category": "Hidden"
+    },
+    {
+      "match": "INDC*",
+      "category": "Hidden"
+    },
+    {
+      "match": "LED*",
+      "category": "Hidden"
+    },
+    {
+      "match": "HDR*",
+      "category": "Hidden"
+    },
+    {
+      "match": "TSW*",
+      "category": "Hidden"
+    },
+    {
+      "match": "SRN*",
+      "category": "Hidden"
+    },
+    {
+      "match": "MR*",
+      "category": "Hidden"
+    },
+    {
+      "match": "XH*",
+      "category": "Hidden"
+    },
+    {
+      "match": "SD*",
+      "category": "Hidden"
+    },
+    {
+      "match": "ADXL*",
+      "category": "Hidden"
+    },
+    {
+      "match": "LDO*",
+      "category": "Hidden"
+    },
+    {
+      "match": "GT*",
+      "category": "Hidden"
+    },
+    {
+      "match": "CM*",
+      "category": "Hidden"
+    },
+    {
+      "match": "EASUN*",
+      "category": "Hidden"
+    },
+    {
+      "match": "KF*",
+      "category": "Hidden"
+    },
+    {
+      "match": "SL*",
+      "category": "Hidden"
+    },
+    {
+      "match": "Camera_Connector*",
+      "category": "Hidden"
+    },
+    {
+      "match": "Display_Connector*",
+      "category": "Hidden"
+    },
+    {
+      "match": "*PIN_HEADER*",
+      "category": "Hidden"
+    },
+    {
+      "match": "*USB*PORTS*",
+      "category": "Hidden"
+    },
+    {
+      "match": "PTFE_*",
+      "category": "Hidden"
+    },
+    {
+      "match": "Needle_*",
+      "category": "Hidden"
+    },
+    {
+      "match": "a_belt_clip_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_front_grill_logo_plates_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_heat_set_practice_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_lcd_knob_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_motor_mounts_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_rubber_foot_block_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_x_block_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_x_end_clip_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_z_block_*",
+      "category": "Accent"
+    },
+    {
+      "match": "a_z_end_clip_*",
+      "category": "Accent"
+    }
+  ],
+  "nodes": {
+    "Accessories": {
+      "displayName": "Accessories"
+    },
+    "Electronics": {
+      "displayName": "Electronics"
+    },
+    "Frame": {
+      "displayName": "Frame"
+    },
+    "Panels": {
+      "displayName": "Panels"
+    },
+    "XZ_Axis": {
+      "displayName": "XZ Axis"
+    },
+    "Y_Axis": {
+      "displayName": "Y Axis"
+    },
+    "Accessories/Front_Grill_&_Screen": {
+      "displayName": "Front Grill & Screen"
+    },
+    "Accessories/Prusawire_Supplemental_Badge_(Combined)": {
+      "displayName": "Badge"
+    },
+    "Accessories/Spool_Holder": {
+      "displayName": "Spool Holder"
+    },
+    "Electronics/Mainboards": {
+      "displayName": "Mainboards"
+    },
+    "Electronics/Power": {
+      "displayName": "Power"
+    },
+    "Electronics/Raspberry_Pi": {
+      "displayName": "Raspberry Pi"
+    },
+    "Electronics/Toolhead_Boards": {
+      "displayName": "Toolhead Boards"
+    },
+    "Frame/Feet_Assembly_(Assembly)": {
+      "displayName": "Feet"
+    },
+    "Frame/Prusa_MK4_Frame_Assembly": {
+      "displayName": "Prusa MK3/MK4 Frame"
+    },
+    "Panels/FrontDeckAssembly": {
+      "displayName": "Front Deck Panel"
+    },
+    "Panels/Rear_Panel_Assembly": {
+      "displayName": "Rear Deck Panel"
+    },
+    "XZ_Axis/Door_Puller": {
+      "displayName": "Door Puller"
+    },
+    "XZ_Axis/Door_Puller_Idler": {
+      "displayName": "Door Puller Idler"
+    },
+    "XZ_Axis/XZ_Belts_(Assembly)": {
+      "displayName": "XZ Belts"
+    },
+    "XZ_Axis/XZ_Gantry": {
+      "displayName": "XZ Gantry"
+    },
+    "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly": {
+      "displayName": "XZ Axis Asssembly"
+    },
+    "XZ_Axis/XZ_Gantry/X_Axis_Assembly": {
+      "displayName": "X Axis"
+    },
+    "XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage": {
+      "displayName": "X Carriage"
+    },
+    "Y_Axis/Bed_Assembly_(1)": {
+      "displayName": "Bed"
+    },
+    "Y_Axis/Left_Rod_Assembly": {
+      "displayName": "Left Rod"
+    },
+    "Y_Axis/Right_Rod_Assembly": {
+      "displayName": "Right Rod"
+    },
+    "Y_Axis/Y_Belts": {
+      "displayName": "Y Belts"
+    },
+    "Y_Axis/Y_Idler_Assembly": {
+      "displayName": "Y Idler"
+    },
+    "Y_Axis/Y_Motors_Combined": {
+      "displayName": "Y Motor"
+    }
+  }
 }
