@@ -4,7 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { prettifyNodeName } from '../assets/prettify.js';
+import { prettifyNodeName, treeLabel } from '../assets/prettify.js';
 
 const CASES = [
   // Underscores → spaces, capitalization.
@@ -57,4 +57,23 @@ test('empty and missing names pass through unchanged', () => {
   assert.equal(prettifyNodeName(''), '');
   assert.equal(prettifyNodeName(undefined), undefined);
   assert.equal(prettifyNodeName(null), null);
+});
+
+test('treeLabel prefers displayName when prettifying', () => {
+  assert.equal(treeLabel('LCD_-_Prusa_RepRapDiscount_2004', 'Prusa LCD', true), 'Prusa LCD');
+});
+
+test('treeLabel prettifies when no displayName', () => {
+  assert.equal(treeLabel('X_Carriage', undefined, true), 'X Carriage');
+});
+
+test('treeLabel in raw mode bypasses displayName and prettifier', () => {
+  assert.equal(treeLabel('LCD_-_Prusa_RepRapDiscount_2004', 'Prusa LCD', false),
+               'LCD_-_Prusa_RepRapDiscount_2004');
+  assert.equal(treeLabel('X_Carriage', undefined, false), 'X_Carriage');
+});
+
+test('treeLabel passes missing raw names through for caller fallback', () => {
+  assert.equal(treeLabel(undefined, undefined, false), undefined);
+  assert.equal(treeLabel(undefined, undefined, true), undefined);
 });

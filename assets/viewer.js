@@ -13,7 +13,7 @@ import {
   paletteName,
   collectColorOverrides,
 } from './cadscope_state.js';
-import { prettifyNodeName } from './prettify.js';
+import { treeLabel } from './prettify.js';
 
 const hdriLocation = "./assets/bg.hdr";
 const loadingPhrases = [
@@ -225,6 +225,11 @@ const categoryMeshes = new Map();
 const categoryPickers = new Map();
 let currentColorSet = null;
 let currentLookups = null;
+
+// Raw-names mode: when false, tree labels show unmodified node names
+// (prettifier and displayName overrides bypassed) for spec authoring.
+let prettifyEnabled = true;
+let refreshTreeLabels = null;
 
 // Selection state for tree-to-3D highlighting
 let selectedObj = null;
@@ -808,6 +813,14 @@ function buildTree(sceneRoot, rootLabel, pendingState) {
     return path;
   }
 
+  // Resolve a node's tree label under the current raw/prettified mode.
+  function labelTextFor(obj, isRoot) {
+    if (isRoot && rootLabel) return rootLabel;
+    const entry = lookups ? lookupNode(lookups, pathOf(obj)) : null;
+    return treeLabel(obj.name, entry?.displayName, prettifyEnabled)
+        || obj.type || 'Object';
+  }
+
   function syncTreeItemVisibility(treeItem, visible) {
     const cb = treeItem._checkbox;
     if (cb) {
@@ -947,17 +960,11 @@ function buildTree(sceneRoot, rootLabel, pendingState) {
     // Object name — click to highlight in 3D view
     const label = document.createElement('span');
     label.className = 'tree-label';
-    const entry = lookups ? lookupNode(lookups, pathOf(obj)) : null;
-    if (entry?.displayName) {
-      label.textContent = entry.displayName;
-    } else if (depth === 0 && rootLabel) {
-      label.textContent = rootLabel;
-    } else {
-      label.textContent = prettifyNodeName(obj.name) || obj.type || 'Object';
-    }
+    label.textContent = labelTextFor(obj, depth === 0);
     if (obj.name && label.textContent !== obj.name) {
       label.title = obj.name;  // hover reveals the raw name for spec authoring
     }
+    itemDiv._label = label;
     label.addEventListener('click', (e) => {
       e.stopPropagation();
       if (selectedObj === obj) {
@@ -1009,6 +1016,17 @@ function buildTree(sceneRoot, rootLabel, pendingState) {
 
   createTreeItem(root, treeContainer);
 
+  // Toggling raw/prettified names relabels in place — expansion, selection,
+  // isolate, and search state all survive.
+  refreshTreeLabels = () => {
+    for (const [obj, itemDiv] of objToTreeItem) {
+      const label = itemDiv._label;
+      if (!label) continue;
+      label.textContent = labelTextFor(obj, obj === root);
+      label.title = (obj.name && label.textContent !== obj.name) ? obj.name : '';
+    }
+  };
+
   // Apply pending share state — hidden visibility flips and isolated node.
   // Color overrides are applied separately after buildColorPickerUI runs.
   if (pendingState) {
@@ -1051,6 +1069,13 @@ treeSearchClear.addEventListener('click', () => {
   searchWrapper.classList.remove('has-value');
   filterTree('');
   treeSearch.focus();
+});
+
+// Raw-names toggle — bypasses prettified labels and displayName overrides
+// so the tree shows exactly what spec paths and autoAssign globs match.
+document.getElementById('rawNamesToggle').addEventListener('change', (e) => {
+  prettifyEnabled = !e.target.checked;
+  if (refreshTreeLabels) refreshTreeLabels();
 });
 
 function filterTree(query) {

@@ -8,6 +8,16 @@
 // already containing a capital or digit are left untouched so acronyms
 // and part codes (XZ, SHCS, M3x8) survive. Returns the raw name when
 // stripping would leave nothing.
+// Resolve the scene-tree label for a node: with prettify on, a sidecar
+// displayName wins, otherwise the raw name is prettified; with prettify
+// off, the raw name is returned untouched so the tree shows exactly what
+// spec paths and autoAssign globs match against. Callers supply their own
+// fallback for nameless nodes.
+export function treeLabel(rawName, displayName, prettify) {
+  if (!prettify) return rawName;
+  return displayName || prettifyNodeName(rawName);
+}
+
 export function prettifyNodeName(name) {
   if (!name) return name;
   let s = name;
