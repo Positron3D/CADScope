@@ -1,6 +1,630 @@
 {
   "version": "2.0.0",
   "glb": "Prusawire_2026.R1.glb",
-  "configOptions": {},
-  "parts": []
+  "configOptions": {
+    "toolhead": {
+      "label": "Toolhead",
+      "type": "radio",
+      "choices": [
+        {
+          "id": "stealthburner",
+          "label": "Stealthburner (Revo)",
+          "default": true
+        },
+        {
+          "id": "afterburner",
+          "label": "Afterburner (With Owl)",
+          "default": false
+        }
+      ]
+    },
+    "mainboard": {
+      "label": "Mainboard",
+      "type": "radio",
+      "choices": [
+        {
+          "id": "rambo",
+          "label": "Einsy Rambo",
+          "default": true
+        },
+        {
+          "id": "skr",
+          "label": "SKR Mini E3",
+          "default": false
+        }
+      ]
+    },
+    "psu": {
+      "label": "Power Supply",
+      "type": "radio",
+      "choices": [
+        {
+          "id": "delta_black",
+          "label": "Prusa Black (Delta)",
+          "default": true
+        },
+        {
+          "id": "mk3_silver",
+          "label": "MK3 Silver",
+          "default": false
+        }
+      ]
+    },
+    "toolhead_board": {
+      "label": "Toolhead Board",
+      "type": "radio",
+      "choices": [
+        {
+          "id": "nitehawk",
+          "label": "LDO Nitehawk-SB",
+          "default": true
+        },
+        {
+          "id": "btt_sb2209",
+          "label": "BTT SB2209 (USB)",
+          "default": false
+        }
+      ]
+    },
+    "pulley_size": {
+      "label": "Pulley Size",
+      "type": "radio",
+      "choices": [
+        {
+          "id": "16t",
+          "label": "16T",
+          "default": true
+        },
+        {
+          "id": "20t",
+          "label": "20T",
+          "default": false
+        }
+      ]
+    },
+    "rod_diameter": {
+      "label": "Rod Diameter",
+      "type": "radio",
+      "choices": [
+        {
+          "id": "10mm",
+          "label": "10 mm",
+          "default": true
+        },
+        {
+          "id": "8mm",
+          "label": "8 mm",
+          "default": false
+        }
+      ]
+    },
+    "frame_type": {
+      "label": "Donor Frame",
+      "type": "radio",
+      "choices": [
+        {
+          "id": "mk4",
+          "label": "MK4",
+          "default": true
+        },
+        {
+          "id": "mk3",
+          "label": "MK3",
+          "default": false
+        }
+      ]
+    },
+    "nut_type": {
+      "label": "Square Nuts",
+      "type": "radio",
+      "choices": [
+        {
+          "id": "m3s",
+          "label": "M3S",
+          "default": true
+        },
+        {
+          "id": "v0s",
+          "label": "V0S",
+          "default": false
+        }
+      ]
+    }
+  },
+  "parts": [
+    {
+      "id": "16T_Toothed",
+      "nodes": [
+        "16T_Toothed"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "Y_Belts_Toothed",
+      "nodes": [
+        "Y_Belts_Toothed"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage/Afterburner_Assembly_With_Owl",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage/Afterburner_Assembly_With_Owl"
+      ],
+      "visible": {
+        "when": {
+          "toolhead": "afterburner"
+        }
+      }
+    },
+    {
+      "id": "Panels/Rear_Panel_Assembly/deck_panel_rear_right_deltablackpsu",
+      "nodes": [
+        "Panels/Rear_Panel_Assembly/deck_panel_rear_right_deltablackpsu"
+      ],
+      "visible": {
+        "when": {
+          "psu": "delta_black"
+        }
+      }
+    },
+    {
+      "id": "Panels/Rear_Panel_Assembly/deck_panel_rear_right_silverpsu-meanwellpsu",
+      "nodes": [
+        "Panels/Rear_Panel_Assembly/deck_panel_rear_right_silverpsu-meanwellpsu"
+      ],
+      "visible": {
+        "when": {
+          "psu": "mk3_silver"
+        }
+      }
+    },
+    {
+      "id": "Electronics/Mainboards/SKR_Assembly",
+      "nodes": [
+        "Electronics/Mainboards/SKR_Assembly"
+      ],
+      "visible": {
+        "when": {
+          "mainboard": "skr"
+        }
+      }
+    },
+    {
+      "id": "Electronics/Power/PSU_Assembly/Prusa_Silver_PSU",
+      "nodes": [
+        "Electronics/Power/PSU_Assembly/Prusa_Silver_PSU"
+      ],
+      "visible": {
+        "when": {
+          "psu": "mk3_silver"
+        }
+      }
+    },
+    {
+      "id": "Electronics/Toolhead_Boards/BTT_SB2209_USB_Adapter",
+      "nodes": [
+        "Electronics/Toolhead_Boards/BTT_SB2209_USB_Adapter"
+      ],
+      "visible": {
+        "when": {
+          "toolhead_board": "btt_sb2209"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage/superpinda_mount002/superpinda_mount001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage/superpinda_mount002/superpinda_mount001"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "20t"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "20t"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/Rod_Bearings/LM8LUU_Adapter_Assembly",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/Rod_Bearings/LM8LUU_Adapter_Assembly"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/Rod_Bearings/LM8UU_Adapter_Assembly",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/Rod_Bearings/LM8UU_Adapter_Assembly"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/Rod_Bearings001/LM8LUU_Adapter_Assembly001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/Rod_Bearings001/LM8LUU_Adapter_Assembly001"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/Rod_Bearings001/LM8UU_Adapter_Assembly001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/Rod_Bearings001/LM8UU_Adapter_Assembly001"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T/Rod_Bearings002/LM8LUU_Adapter_Assembly002",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T/Rod_Bearings002/LM8LUU_Adapter_Assembly002"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T/Rod_Bearings002/LM8UU_Adapter_Assembly002",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T/Rod_Bearings002/LM8UU_Adapter_Assembly002"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/Rod_Bearings003/LM8LUU_Adapter_Assembly003",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/Rod_Bearings003/LM8LUU_Adapter_Assembly003"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/Rod_Bearings003/LM8UU_Adapter_Assembly003",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/Rod_Bearings003/LM8UU_Adapter_Assembly003"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_front",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_front"
+      ],
+      "visible": {
+        "when": {
+          "nut_type": "m3s"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_front_(1)",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_front_(1)"
+      ],
+      "visible": {
+        "when": {
+          "nut_type": "v0s"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_rear",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_rear"
+      ],
+      "visible": {
+        "when": {
+          "nut_type": "m3s"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_rear_(1)",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_rear_(1)"
+      ],
+      "visible": {
+        "when": {
+          "nut_type": "v0s"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/a_x_block_front001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/a_x_block_front001"
+      ],
+      "visible": {
+        "when": {
+          "nut_type": "m3s"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/a_x_block_front_(1)001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/a_x_block_front_(1)001"
+      ],
+      "visible": {
+        "when": {
+          "nut_type": "v0s"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/a_x_block_rear_(1)001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/a_x_block_rear_(1)001"
+      ],
+      "visible": {
+        "when": {
+          "nut_type": "v0s"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/a_x_block_rear001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/a_x_block_rear001"
+      ],
+      "visible": {
+        "when": {
+          "nut_type": "m3s"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/Linear_Rods_-_10x325mm_and_8x320mm001/Linear_Rod_-_8x320mm001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/Linear_Rods_-_10x325mm_and_8x320mm001/Linear_Rod_-_8x320mm001"
+      ],
+      "visible": {
+        "when": {
+          "rod_diameter": "8mm"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Linear_Rods_-_10x325mm_and_8x320mm/Linear_Rod_-_8x320mm",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Linear_Rods_-_10x325mm_and_8x320mm/Linear_Rod_-_8x320mm"
+      ],
+      "visible": {
+        "when": {
+          "rod_diameter": "8mm"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_20T",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_20T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "20t"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_20T",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_20T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "20t"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_16T/LDO-42STH38-1684MAC002",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_16T/LDO-42STH38-1684MAC002"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_20T/LDO-42STH38-1684MAC003",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_20T/LDO-42STH38-1684MAC003"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_16T/LDO-42STH38-1684MAC004",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_16T/LDO-42STH38-1684MAC004"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_20T/LDO-42STH38-1684MAC005",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_20T/LDO-42STH38-1684MAC005"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers"
+      ],
+      "visible": {
+        "when": {
+          "rod_diameter": "8mm",
+          "frame_type": "mk4"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers001",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers001"
+      ],
+      "visible": {
+        "when": {
+          "rod_diameter": "8mm",
+          "frame_type": "mk3"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers002",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers002"
+      ],
+      "visible": {
+        "when": {
+          "rod_diameter": "10mm",
+          "frame_type": "mk4"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers003",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers003"
+      ],
+      "visible": {
+        "when": {
+          "rod_diameter": "10mm",
+          "frame_type": "mk3"
+        }
+      }
+    },
+    {
+      "id": "Y_Axis/Bed_Assembly_(1)/Bed_Assembly/Prusa_MK3_Y_Carriage_v4",
+      "nodes": [
+        "Y_Axis/Bed_Assembly_(1)/Bed_Assembly/Prusa_MK3_Y_Carriage_v4"
+      ],
+      "visible": {
+        "when": {
+          "frame_type": "mk3"
+        }
+      }
+    },
+    {
+      "id": "Y_Axis/Y_Motors_Combined/Y_Motor_20T",
+      "nodes": [
+        "Y_Axis/Y_Motors_Combined/Y_Motor_20T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "20t"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage/Stealthburner",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/X_Carriage/Stealthburner"
+      ],
+      "visible": {
+        "when": {
+          "toolhead": "stealthburner"
+        }
+      }
+    },
+    {
+      "id": "Electronics/Mainboards/Rambo_Assembly",
+      "nodes": [
+        "Electronics/Mainboards/Rambo_Assembly"
+      ],
+      "visible": {
+        "when": {
+          "mainboard": "rambo"
+        }
+      }
+    },
+    {
+      "id": "Electronics/Power/PSU_Assembly/Prusa_Black_PSU",
+      "nodes": [
+        "Electronics/Power/PSU_Assembly/Prusa_Black_PSU"
+      ],
+      "visible": {
+        "when": {
+          "psu": "delta_black"
+        }
+      }
+    },
+    {
+      "id": "Electronics/Toolhead_Boards/Nitehawk-SB_USB",
+      "nodes": [
+        "Electronics/Toolhead_Boards/Nitehawk-SB_USB"
+      ],
+      "visible": {
+        "when": {
+          "toolhead_board": "nitehawk"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "16t"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "16t"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_16T",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_16T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "16t"
+        }
+      }
+    },
+    {
+      "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_16T",
+      "nodes": [
+        "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_16T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "16t"
+        }
+      }
+    },
+    {
+      "id": "Y_Axis/Y_Motors_Combined/Y_Motor_16T",
+      "nodes": [
+        "Y_Axis/Y_Motors_Combined/Y_Motor_16T"
+      ],
+      "visible": {
+        "when": {
+          "pulley_size": "16t"
+        }
+      }
+    }
+  ]
 }
