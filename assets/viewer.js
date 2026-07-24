@@ -1071,12 +1071,13 @@ treeSearchClear.addEventListener('click', () => {
   treeSearch.focus();
 });
 
-// Raw-names toggle — bypasses prettified labels and displayName overrides
-// so the tree shows exactly what spec paths and autoAssign globs match.
-document.getElementById('rawNamesToggle').addEventListener('change', (e) => {
-  prettifyEnabled = !e.target.checked;
+// Raw-names mode (console only): setRawNames(true) bypasses prettified
+// labels and displayName overrides so the tree shows exactly what spec
+// paths and autoAssign globs match; setRawNames(false) restores.
+window.setRawNames = (raw) => {
+  prettifyEnabled = !raw;
   if (refreshTreeLabels) refreshTreeLabels();
-});
+};
 
 function filterTree(query) {
   const tree = document.getElementById('tree');
