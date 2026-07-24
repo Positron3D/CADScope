@@ -37,6 +37,14 @@ const CASES = [
   ['(1)', '(1)'],
   // Runs of underscores collapse.
   ['Foo__Bar', 'Foo Bar'],
+  // Trailing lowercase version markers.
+  ['M3x25_SHCS_v2', 'M3x25 SHCS'],
+  ['M5x10_BHCS_v12', 'M5x10 BHCS'],
+  ['Hotend_v2_(3)', 'Hotend'],
+  // Capital V and voltage-style codes are not version markers.
+  ['Part_V3', 'Part V3'],
+  ['PSU_48V', 'PSU 48V'],
+  ['v2', 'v2'],
 ];
 
 for (const [input, expected] of CASES) {

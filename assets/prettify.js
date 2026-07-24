@@ -2,8 +2,9 @@
 // ABOUTME: Strips duplicate suffixes, converts underscores, capitalizes lowercase words.
 
 // Prettify a raw node name for display: strip CAD duplicate suffixes
-// ("(N)" copies, trailing runs of 3+ digits, "-N" dedup), turn
-// underscores into spaces, and capitalize all-lowercase words. Words
+// ("(N)" copies, trailing runs of 3+ digits, "-N" dedup) and lowercase
+// version markers ("v2"), turn underscores into spaces, and capitalize
+// all-lowercase words. Words
 // already containing a capital or digit are left untouched so acronyms
 // and part codes (XZ, SHCS, M3x8) survive. Returns the raw name when
 // stripping would leave nothing.
@@ -16,6 +17,7 @@ export function prettifyNodeName(name) {
     s = s.replace(/[_ ]?\(\d+\)$/, '');   // CAD duplicate "(N)"
     s = s.replace(/(\D)\d{3,}$/, '$1');   // trailing run of 3+ digits
     s = s.replace(/-\d+$/, '');           // pipeline dedup "-N"
+    s = s.replace(/[_ -]v\d+$/, '');      // version marker "v2" (lowercase only)
     s = s.replace(/[_ -]+$/, '');         // dangling separators
   } while (s !== prev);                   // stacked suffixes strip until stable
   if (!s) return name;

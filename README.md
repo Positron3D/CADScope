@@ -19,7 +19,7 @@ A browser-based 3D Viewer for CAD Assemblies, built with Three.js. Converts STEP
 - **Middle/right-drag** — Pan
 - **Scroll** — Zoom
 - **View buttons** (top-right) — Preset angles + zoom
-- **Scene hierarchy** (left sidebar) — Expand/collapse nodes, toggle visibility. The root node displays the model's `name` from `models.js`. Node labels are prettified for display (underscores → spaces, lowercase words capitalized, CAD duplicate suffixes like `(2)`/`003` stripped); a sidecar `displayName` overrides this, and hovering a label shows the raw node name
+- **Scene hierarchy** (left sidebar) — Expand/collapse nodes, toggle visibility. The root node displays the model's `name` from `models.js`. Node labels are prettified for display (underscores → spaces, lowercase words capitalized, CAD duplicate suffixes like `(2)`/`003`/`v2` stripped); a sidecar `displayName` overrides this, and hovering a label shows the raw node name
 - **Isolate button** (⊚, hover a tree row) — Hides everything except the clicked node and its ancestors/descendants; click again to restore
 - **Color pickers** (left sidebar) — Change per-category part colors in real-time (when a color set file exists)
 
