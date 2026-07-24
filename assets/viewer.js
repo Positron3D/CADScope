@@ -13,6 +13,7 @@ import {
   paletteName,
   collectColorOverrides,
 } from './cadscope_state.js';
+import { prettifyNodeName } from './prettify.js';
 
 const hdriLocation = "./assets/bg.hdr";
 const loadingPhrases = [
@@ -952,7 +953,10 @@ function buildTree(sceneRoot, rootLabel, pendingState) {
     } else if (depth === 0 && rootLabel) {
       label.textContent = rootLabel;
     } else {
-      label.textContent = obj.name || obj.type || 'Object';
+      label.textContent = prettifyNodeName(obj.name) || obj.type || 'Object';
+    }
+    if (obj.name && label.textContent !== obj.name) {
+      label.title = obj.name;  // hover reveals the raw name for spec authoring
     }
     label.addEventListener('click', (e) => {
       e.stopPropagation();
