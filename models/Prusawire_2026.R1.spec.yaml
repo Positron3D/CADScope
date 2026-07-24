@@ -151,6 +151,123 @@ options:
       - { id: m3s, label: "M3S", default: true }
       - { id: v0s, label: "V0S" }
 
+# ZIP download contents: base URL + always-included files + option-
+# gated groups. Unassigned STLs are listed at the bottom for sorting.
+downloads:
+  base: "https://raw.githubusercontent.com/Positron3D/Prusawire/main/STLs/"
+  always:
+    - "Door_Puller/door_puller_anchor.stl"
+    - "Door_Puller/door_puller_bracket.stl"
+    - "Door_Puller/door_puller_idler_bracket.stl"
+    - "Electronics/daygreen_mosfet_bracket.stl"
+    - "Electronics/heatbed_cable_clip.stl"
+    - "Electronics/raspberry_pi_bracket.stl"
+    - "Electronics/wago_mount.stl"
+    - "Frame/[a]_rubber_foot_block_x4.stl"
+    - "MK3_LCD/[a]_lcd_knob_mk3.stl"
+    - "MK3_LCD/[a]_lcd_knob_tri_wing_mk3.stl"
+    - "MK3_LCD/lcd_supports_mk3.stl"
+    - "Panels/deck_panel_front.stl"
+    - "Panels/deck_panel_rear_connector.stl"
+    - "Panels/deck_panel_rear_left.stl"
+    - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Combined).stl"
+    - "Spool_Management/filament_guide_ecas.stl"
+    - "Spool_Management/spool_holder.stl"
+    - "X_Gantry/[a]_belt_clip_x2.stl"
+    - "X_Gantry/carriage_block.stl"
+    - "X_Gantry/gantry_frame_bumper.stl"
+    - "X_Gantry/superpinda_bracket.stl"
+    - "X_Gantry/x_carriage_left.stl"
+    - "X_Gantry/x_carriage_right.stl"
+    - "Y_Axis/[a]_belt_clip_x2.stl"
+    - "Y_Axis/heatbed_cable_cover_bottom_2mm_nylon.stl"
+    - "Y_Axis/heatbed_cable_cover_bottom_3mm_nylon.stl"
+    - "Y_Axis/y_idler_bracket.stl"
+  groups:
+    - when: { mainboard: rambo }
+      files:
+        - "Electronics/mcu_cover_einsy.stl"
+    - when: { mainboard: skr }
+      files:
+        - "Electronics/mcu_cover_skr_mini_e3.stl"
+    - when: { psu: delta_black }
+      files:
+        - "Electronics/Black PSU Covers/black_psu_cover_prusawire.stl"
+        - "Electronics/Black PSU Covers/black_psu_cover_voron.stl"
+        - "Panels/deck_panel_rear_right_deltablackpsu.stl"
+    - when: { psu: mk3_silver }
+      files:
+        - "Electronics/silver_psu_cover_mk3_bottom.stl"
+        - "Electronics/silver_psu_cover_mk3_rewired.stl"
+        - "Panels/deck_panel_rear_right_silverpsu-meanwellpsu.stl"
+    - when: { pulley_size: 16t }
+      files:
+        - "Y_Axis/y_motor_bracket_16T_Pulley.stl"
+    - when: { pulley_size: 20t }
+      files:
+        - "Y_Axis/y_motor_bracket_20T_Pulley.stl"
+    - when: { toolhead: stealthburner }
+      files:
+        - "Electronics/umbilical_strain_relief_by_nagelwerkstatt.stl"
+    - when: { toolhead_board: btt_sb2209 }
+      files:
+        - "Electronics/btt_sb2209_usb_bracket.stl"
+    - when: { toolhead_board: nitehawk }
+      files:
+        - "Electronics/nitehawk_sb_usb_bracket.stl"
+  # TODO: unassigned STLs — sort into always/groups by hand:
+  #   - "Electronics/mcu_box_einsy.stl"
+  #   - "Electronics/mcu_box_skr_mini_e3.stl"
+  #   - "Frame/[a]_front_grill_logo_plates.stl"
+  #   - "Frame/front_grill_left.stl"
+  #   - "Frame/front_grill_right.stl"
+  #   - "MK3_LCD/lcd_cable_clip_x4.stl"
+  #   - "MK3_LCD/lcd_cover_mk3_single_color.stl"
+  #   - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Back).stl"
+  #   - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Text).stl"
+  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_320mm_16T.stl"
+  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_325mm_16T.stl"
+  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_330mm_16T.stl"
+  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_341mm_16T.stl"
+  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_320mm_16T.stl"
+  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_325mm_16T.stl"
+  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_330mm_16T.stl"
+  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_320mm_20T.stl"
+  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_325mm_20T.stl"
+  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_330mm_20T.stl"
+  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_341mm_20T.stl"
+  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_320mm_20T.stl"
+  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_325mm_20T.stl"
+  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_330mm_20T.stl"
+  #   - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_10mm_diameter_MK3_frame.stl"
+  #   - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_10mm_diameter_MK4_frame.stl"
+  #   - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_8mm_diameter_MK3_frame.stl"
+  #   - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_8mm_diameter_MK4_frame.stl"
+  #   - "XZ_Axis/[a]_motor_mounts_b.stl"
+  #   - "XZ_Axis/idler_blocks_b.stl"
+  #   - "X_Gantry/16T XZ Joints/[a]_xz_blocks_M3Sx16T.stl"
+  #   - "X_Gantry/16T XZ Joints/[a]_xz_blocks_V0Sx16T.stl"
+  #   - "X_Gantry/20T XZ Joints/[a]_xz_blocks_M3Sx20T.stl"
+  #   - "X_Gantry/20T XZ Joints/[a]_xz_blocks_V0Sx20T.stl"
+  #   - "X_Gantry/[a]_belt_tensioner_retainers.stl"
+  #   - "X_Gantry/[a]_xz_end_clips.stl"
+  #   - "X_Gantry/belt_clip_x2.stl"
+  #   - "Y_Axis/heatbed_cable_cover_top.stl"
+  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_M3S_16T.stl"
+  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_M3S_20T.stl"
+  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_V0S_16T.stl"
+  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_V0S_20T.stl"
+  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_M3S_16T.stl"
+  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_M3S_20T.stl"
+  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_V0S_16T.stl"
+  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_V0S_20T.stl"
+  #   - "Y_Axis/y_rod_holder_front_M3S.stl"
+  #   - "Y_Axis/y_rod_holder_front_V0S.stl"
+  #   - "Y_Axis/y_rod_holder_rear_M3S.stl"
+  #   - "Y_Axis/y_rod_holder_rear_V0S.stl"
+  #   - "X_Gantry/8mm_bearing_adapter_x2_LM8LUU.stl"  (inside an unconditionally hidden assembly)
+  #   - "X_Gantry/8mm_bearing_adapter_x2_LM8UU.stl"  (inside an unconditionally hidden assembly)
+
 # Per-node overrides — displayName, category, hidden, visible (when/unless),
 # stl (download paths), visualOnly. Paths come from .scaffold.json's _nodes.
 nodes:
@@ -333,6 +450,9 @@ nodes:
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_20T/LDO-42STH38-1684MAC003:  { hidden: true }
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_16T/LDO-42STH38-1684MAC004:  { hidden: true }
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_20T/LDO-42STH38-1684MAC005:  { hidden: true }
+  Y_Axis/Y_Motors_Combined/Y_Motor_16T/LDO-42STH38-1684MAC:  { hidden: true }
+  Y_Axis/Y_Motors_Combined/Y_Motor_20T/LDO-42STH38-1684MAC001:  { hidden: true }
+
 
   # Z upper idler variants.
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers:  { displayName: "Z Upper Idlers - 8mm MK4", visible: { when: { rod_diameter: 8mm, frame_type: mk4 } } }

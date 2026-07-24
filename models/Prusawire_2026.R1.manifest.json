@@ -458,6 +458,20 @@
       "hidden": true
     },
     {
+      "id": "Y_Axis/Y_Motors_Combined/Y_Motor_16T/LDO-42STH38-1684MAC",
+      "nodes": [
+        "Y_Axis/Y_Motors_Combined/Y_Motor_16T/LDO-42STH38-1684MAC"
+      ],
+      "hidden": true
+    },
+    {
+      "id": "Y_Axis/Y_Motors_Combined/Y_Motor_20T/LDO-42STH38-1684MAC001",
+      "nodes": [
+        "Y_Axis/Y_Motors_Combined/Y_Motor_20T/LDO-42STH38-1684MAC001"
+      ],
+      "hidden": true
+    },
+    {
       "id": "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers",
       "nodes": [
         "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers"
@@ -626,5 +640,115 @@
         }
       }
     }
-  ]
+  ],
+  "downloads": {
+    "base": "https://raw.githubusercontent.com/Positron3D/Prusawire/main/STLs/",
+    "always": [
+      "Door_Puller/door_puller_anchor.stl",
+      "Door_Puller/door_puller_bracket.stl",
+      "Door_Puller/door_puller_idler_bracket.stl",
+      "Electronics/daygreen_mosfet_bracket.stl",
+      "Electronics/heatbed_cable_clip.stl",
+      "Electronics/raspberry_pi_bracket.stl",
+      "Electronics/wago_mount.stl",
+      "Frame/[a]_rubber_foot_block_x4.stl",
+      "MK3_LCD/[a]_lcd_knob_mk3.stl",
+      "MK3_LCD/[a]_lcd_knob_tri_wing_mk3.stl",
+      "MK3_LCD/lcd_supports_mk3.stl",
+      "Panels/deck_panel_front.stl",
+      "Panels/deck_panel_rear_connector.stl",
+      "Panels/deck_panel_rear_left.stl",
+      "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Combined).stl",
+      "Spool_Management/filament_guide_ecas.stl",
+      "Spool_Management/spool_holder.stl",
+      "X_Gantry/[a]_belt_clip_x2.stl",
+      "X_Gantry/carriage_block.stl",
+      "X_Gantry/gantry_frame_bumper.stl",
+      "X_Gantry/superpinda_bracket.stl",
+      "X_Gantry/x_carriage_left.stl",
+      "X_Gantry/x_carriage_right.stl",
+      "Y_Axis/[a]_belt_clip_x2.stl",
+      "Y_Axis/heatbed_cable_cover_bottom_2mm_nylon.stl",
+      "Y_Axis/heatbed_cable_cover_bottom_3mm_nylon.stl",
+      "Y_Axis/y_idler_bracket.stl"
+    ],
+    "groups": [
+      {
+        "when": {
+          "mainboard": "rambo"
+        },
+        "files": [
+          "Electronics/mcu_cover_einsy.stl"
+        ]
+      },
+      {
+        "when": {
+          "mainboard": "skr"
+        },
+        "files": [
+          "Electronics/mcu_cover_skr_mini_e3.stl"
+        ]
+      },
+      {
+        "when": {
+          "psu": "delta_black"
+        },
+        "files": [
+          "Electronics/Black PSU Covers/black_psu_cover_prusawire.stl",
+          "Electronics/Black PSU Covers/black_psu_cover_voron.stl",
+          "Panels/deck_panel_rear_right_deltablackpsu.stl"
+        ]
+      },
+      {
+        "when": {
+          "psu": "mk3_silver"
+        },
+        "files": [
+          "Electronics/silver_psu_cover_mk3_bottom.stl",
+          "Electronics/silver_psu_cover_mk3_rewired.stl",
+          "Panels/deck_panel_rear_right_silverpsu-meanwellpsu.stl"
+        ]
+      },
+      {
+        "when": {
+          "pulley_size": "16t"
+        },
+        "files": [
+          "Y_Axis/y_motor_bracket_16T_Pulley.stl"
+        ]
+      },
+      {
+        "when": {
+          "pulley_size": "20t"
+        },
+        "files": [
+          "Y_Axis/y_motor_bracket_20T_Pulley.stl"
+        ]
+      },
+      {
+        "when": {
+          "toolhead": "stealthburner"
+        },
+        "files": [
+          "Electronics/umbilical_strain_relief_by_nagelwerkstatt.stl"
+        ]
+      },
+      {
+        "when": {
+          "toolhead_board": "btt_sb2209"
+        },
+        "files": [
+          "Electronics/btt_sb2209_usb_bracket.stl"
+        ]
+      },
+      {
+        "when": {
+          "toolhead_board": "nitehawk"
+        },
+        "files": [
+          "Electronics/nitehawk_sb_usb_bracket.stl"
+        ]
+      }
+    ]
+  }
 }

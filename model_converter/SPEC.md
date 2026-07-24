@@ -56,6 +56,13 @@ rules:                     # optional; cross-cutting glob rules
   - { show: "Other/*", when: { boolOption: true } }
 
 stlBase: "https://..."     # optional; prepended to per-node `stl:` paths in the manifest
+
+downloads:                 # optional; drives the configurator's ZIP download
+  base: "https://..."      # URL prefix for every file below
+  always: [ "path.stl" ]   # included in every download
+  groups:                  # option-gated file sets
+    - when: { optionId: choiceId }
+      files: [ "path.stl" ]
 ```
 
 Required: `model.glb`, `palette` (non-empty). Everything else is optional.
@@ -168,6 +175,17 @@ hexCowl:
 ```
 
 `description:` is optional and renders the same way as on selection options.
+
+## Downloads
+
+The `downloads:` section defines what the configurator's ZIP download
+contains. `base` is the URL prefix (typically the raw-content URL of the git
+repository holding the STLs) applied to every file path. `always` files are
+included in every download; each `groups` entry contributes its `files` when
+its `when` clause matches the active configuration — the same clause grammar
+as `visible.when` (AND across keys, list value = OR within a key). The whole
+section passes through verbatim to `manifest.json`; `colors.json` is
+unaffected.
 
 ## Node entries
 
