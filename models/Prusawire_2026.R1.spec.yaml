@@ -219,6 +219,14 @@ downloads:
     - "Frame/[a]_front_grill_logo_plates.stl"
     - "Frame/front_grill_left.stl"
     - "Frame/front_grill_right.stl"
+    - "Tools/ADXL_Bed_Mount_Square_Expansion_Joints.stl"
+    - "Tools/ADXL_Bed_Mount_by_Steve_Builds.stl"
+    - "Tools/Align_Tool_XZ_Axis.stl"
+    - "Tools/Align_Tool_Y_Axis.stl"
+    - "Tools/[a]_heat_set_practice.stl"
+    - "Tools/mgn12_rail_guide_x2.stl"
+    - "Printable_M3_T_Nuts_for_3030_Extrusion_by_Kapplion/Printable_M3_T_Nuts_Optional_10x.stl"
+    - "Printable_M3_T_Nuts_for_3030_Extrusion_by_Kapplion/Printable_M3_T_Nuts_Required_17x.stl"
   groups:
     - when: { mainboard: rambo }
       files:
