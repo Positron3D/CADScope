@@ -273,6 +273,17 @@ def _parse_options(raw):
                         raise SpecError(
                             f"options.{opt_id}.choices[{j}]: 'description' must be a string")
                     choice_out["description"] = c_desc
+                c_when = choice.get("when")
+                if c_when is not None:
+                    if not isinstance(c_when, dict) or not c_when:
+                        raise SpecError(
+                            f"options.{opt_id}.choices[{j}]: 'when' must be a non-empty mapping")
+                    for key, value in c_when.items():
+                        values = value if isinstance(value, list) else [value]
+                        if not all(isinstance(v, (str, bool)) for v in values):
+                            raise SpecError(
+                                f"options.{opt_id}.choices[{j}].when.{key}: values must be strings or bools")
+                    choice_out["when"] = dict(c_when)
                 parsed_choices.append(choice_out)
             entry = {
                 "label": body.get("label", opt_id),

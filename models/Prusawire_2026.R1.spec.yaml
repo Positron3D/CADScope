@@ -110,46 +110,73 @@ autoAssign:
 # Each choice gates nodes below via visible: { when: { <option>: <choice> } };
 # the defaults define which variants render in CADScope's default view.
 options:
-  toolhead:
-    label: "Toolhead"
-    choices:
-      - { id: stealthburner, label: "Stealthburner (Revo)", default: true }
-      - { id: afterburner,   label: "Afterburner (With Owl)" }
-  mainboard:
-    label: "Mainboard"
-    choices:
-      - { id: rambo, label: "Einsy Rambo", default: true }
-      - { id: skr,   label: "SKR Mini E3" }
-  psu:
-    label: "Power Supply"
-    choices:
-      - { id: delta_black, label: "Prusa Black (Delta)", default: true }
-      - { id: mk3_silver,  label: "MK3 Silver" }
-  toolhead_board:
-    label: "Toolhead Board"
-    choices:
-      - { id: nitehawk,   label: "LDO Nitehawk-SB", default: true }
-      - { id: btt_sb2209, label: "BTT SB2209 (USB)" }
-  pulley_size:
-    label: "Pulley Size"
-    choices:
-      - { id: 16t, label: "16T", default: true }
-      - { id: 20t, label: "20T" }
-  rod_diameter:
-    label: "Rod Diameter"
-    choices:
-      - { id: 10mm, label: "10 mm", default: true }
-      - { id: 8mm,  label: "8 mm" }
   frame_type:
     label: "Donor Frame"
     choices:
       - { id: mk4, label: "MK4", default: true }
       - { id: mk3, label: "MK3" }
+  pulley_size:
+    label: "Pulley Size"
+    choices:
+      - { id: 16t, label: "16T (Prusa-spec)", default: true }
+      - { id: 20t, label: "20T (Voron Switchwire-spec)" }
+  z_rod:
+    label: "Z Linear Rods"
+    type: dropdown
+    choices:
+      - { id: 10x325, label: "10mm x 325mm (MK4 Z Rod)", default: true }
+      - { id: 8x320,  label: "8mm x 320mm (MK3 Z Rod)" }
+      - { id: 8x325,  label: "8mm x 325mm" }
+      - { id: 8x330,  label: "8mm x 330mm" }
+      - { id: 10x320, label: "10mm x 320mm" }
+      - { id: 10x330, label: "10mm x 330mm" }
+      - { id: 10x341, label: "10mm x 341mm" }
+  z_rod_bearing:
+    label: "Z Rod Bearing Type"
+    choices:
+      - { id: lm10luu, label: "LM10LUU", default: true, when: { z_rod: [10x320, 10x325, 10x330, 10x341] } }
+      - { id: lm8uu,   label: "LM8UU",  when: { z_rod: [8x320, 8x325, 8x330] } }
+      - { id: lm8luu,  label: "LM8LUU", when: { z_rod: [8x320, 8x325, 8x330] } }
   nut_type:
     label: "Square Nuts"
     choices:
-      - { id: m3s, label: "M3S", default: true }
-      - { id: v0s, label: "V0S" }
+      - { id: m3s, label: "M3S (Prusa-style M3 Square Nuts)", default: true }
+      - { id: v0s, label: "V0S (Voron V0 1515 Style Square Nuts)" }
+  y_attachment:
+    label: "Y-Carriage Attachment"
+    choices:
+      - { id: bearing_clips, label: "Bearing Clips (MK4 Style)", default: true }
+      - { id: u_bolts,       label: "U-Bolts (MK3 Style)" }
+  mainboard:
+    label: "Mainboard"
+    choices:
+      - { id: rambo, label: "Einsy Rambo", default: true }
+      - { id: skr,   label: "SKR Mini E3" }
+  toolhead_board:
+    label: "Toolhead Board"
+    choices:
+      - { id: nitehawk,   label: "LDO Nitehawk-SB", default: true }
+      - { id: btt_sb2209, label: "BTT SB2209 (USB)" }
+  psu:
+    label: "Power Supply"
+    choices:
+      - { id: delta_black, label: "Prusa Black (Delta)", default: true }
+      - { id: mk3_silver,  label: "MK3 Silver" }
+  toolhead:
+    label: "Toolhead"
+    choices:
+      - { id: stealthburner, label: "Stealthburner (Revo)", default: true }
+      - { id: afterburner,   label: "Afterburner (With Owl)" }
+  lcd_knob:
+    label: "LCD Knob Style"
+    choices:
+      - { id: switchwire, label: "Voron Switchwire", default: true }
+      - { id: tri_wing,   label: "Prusa MK3 Tri-Wing" }
+  badge_type:
+    label: "Supplemental Badge"
+    choices:
+      - { id: combined, label: "Combined (single color)", default: true }
+      - { id: separate, label: "Separate Back + Text (multi-color)" }
 
 # ZIP download contents: base URL + always-included files + option-
 # gated groups. Unassigned STLs are listed at the bottom for sorting.
@@ -164,13 +191,13 @@ downloads:
     - "Electronics/raspberry_pi_bracket.stl"
     - "Electronics/wago_mount.stl"
     - "Frame/[a]_rubber_foot_block_x4.stl"
-    - "MK3_LCD/[a]_lcd_knob_mk3.stl"
-    - "MK3_LCD/[a]_lcd_knob_tri_wing_mk3.stl"
     - "MK3_LCD/lcd_supports_mk3.stl"
+    - "MK3_LCD/lcd_cable_clip_x4.stl"
+    - "MK3_LCD/lcd_cover_mk3_single_color.stl"
+    - "MK3_LCD/mmu_lcd_cover_mk3.3mf"
     - "Panels/deck_panel_front.stl"
     - "Panels/deck_panel_rear_connector.stl"
     - "Panels/deck_panel_rear_left.stl"
-    - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Combined).stl"
     - "Spool_Management/filament_guide_ecas.stl"
     - "Spool_Management/spool_holder.stl"
     - "X_Gantry/[a]_belt_clip_x2.stl"
@@ -183,13 +210,24 @@ downloads:
     - "Y_Axis/heatbed_cable_cover_bottom_2mm_nylon.stl"
     - "Y_Axis/heatbed_cable_cover_bottom_3mm_nylon.stl"
     - "Y_Axis/y_idler_bracket.stl"
+    - "XZ_Axis/[a]_motor_mounts_b.stl"
+    - "XZ_Axis/idler_blocks_b.stl"
+    - "X_Gantry/[a]_belt_tensioner_retainers.stl"
+    - "X_Gantry/[a]_xz_end_clips.stl"
+    - "X_Gantry/belt_clip_x2.stl"
+    - "Y_Axis/heatbed_cable_cover_top.stl"
+    - "Frame/[a]_front_grill_logo_plates.stl"
+    - "Frame/front_grill_left.stl"
+    - "Frame/front_grill_right.stl"
   groups:
     - when: { mainboard: rambo }
       files:
         - "Electronics/mcu_cover_einsy.stl"
+        - "Electronics/mcu_box_einsy.stl"
     - when: { mainboard: skr }
       files:
         - "Electronics/mcu_cover_skr_mini_e3.stl"
+        - "Electronics/mcu_box_skr_mini_e3.stl"
     - when: { psu: delta_black }
       files:
         - "Electronics/Black PSU Covers/black_psu_cover_prusawire.stl"
@@ -215,58 +253,123 @@ downloads:
     - when: { toolhead_board: nitehawk }
       files:
         - "Electronics/nitehawk_sb_usb_bracket.stl"
-  # TODO: unassigned STLs — sort into always/groups by hand:
-  #   - "Electronics/mcu_box_einsy.stl"
-  #   - "Electronics/mcu_box_skr_mini_e3.stl"
-  #   - "Frame/[a]_front_grill_logo_plates.stl"
-  #   - "Frame/front_grill_left.stl"
-  #   - "Frame/front_grill_right.stl"
-  #   - "MK3_LCD/lcd_cable_clip_x4.stl"
-  #   - "MK3_LCD/lcd_cover_mk3_single_color.stl"
-  #   - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Back).stl"
-  #   - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Text).stl"
-  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_320mm_16T.stl"
-  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_325mm_16T.stl"
-  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_330mm_16T.stl"
-  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_341mm_16T.stl"
-  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_320mm_16T.stl"
-  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_325mm_16T.stl"
-  #   - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_330mm_16T.stl"
-  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_320mm_20T.stl"
-  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_325mm_20T.stl"
-  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_330mm_20T.stl"
-  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_341mm_20T.stl"
-  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_320mm_20T.stl"
-  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_325mm_20T.stl"
-  #   - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_330mm_20T.stl"
-  #   - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_10mm_diameter_MK3_frame.stl"
-  #   - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_10mm_diameter_MK4_frame.stl"
-  #   - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_8mm_diameter_MK3_frame.stl"
-  #   - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_8mm_diameter_MK4_frame.stl"
-  #   - "XZ_Axis/[a]_motor_mounts_b.stl"
-  #   - "XZ_Axis/idler_blocks_b.stl"
-  #   - "X_Gantry/16T XZ Joints/[a]_xz_blocks_M3Sx16T.stl"
-  #   - "X_Gantry/16T XZ Joints/[a]_xz_blocks_V0Sx16T.stl"
-  #   - "X_Gantry/20T XZ Joints/[a]_xz_blocks_M3Sx20T.stl"
-  #   - "X_Gantry/20T XZ Joints/[a]_xz_blocks_V0Sx20T.stl"
-  #   - "X_Gantry/[a]_belt_tensioner_retainers.stl"
-  #   - "X_Gantry/[a]_xz_end_clips.stl"
-  #   - "X_Gantry/belt_clip_x2.stl"
-  #   - "Y_Axis/heatbed_cable_cover_top.stl"
-  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_M3S_16T.stl"
-  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_M3S_20T.stl"
-  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_V0S_16T.stl"
-  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_V0S_20T.stl"
-  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_M3S_16T.stl"
-  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_M3S_20T.stl"
-  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_V0S_16T.stl"
-  #   - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_V0S_20T.stl"
-  #   - "Y_Axis/y_rod_holder_front_M3S.stl"
-  #   - "Y_Axis/y_rod_holder_front_V0S.stl"
-  #   - "Y_Axis/y_rod_holder_rear_M3S.stl"
-  #   - "Y_Axis/y_rod_holder_rear_V0S.stl"
-  #   - "X_Gantry/8mm_bearing_adapter_x2_LM8LUU.stl"  (inside an unconditionally hidden assembly)
-  #   - "X_Gantry/8mm_bearing_adapter_x2_LM8UU.stl"  (inside an unconditionally hidden assembly)
+    - when: { badge_type: combined }
+      files:
+        - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Combined).stl"
+    - when: { badge_type: separate }
+      files:
+        - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Back).stl"
+        - "Prusawire Supplemental Badge/Prusawire Supplemental Badge (Text).stl"
+    - when: { lcd_knob: switchwire }
+      files:
+        - "MK3_LCD/[a]_lcd_knob_mk3.stl"
+    - when: { lcd_knob: tri_wing }
+      files:
+        - "MK3_LCD/[a]_lcd_knob_tri_wing_mk3.stl"
+    - when: { z_rod_bearing: lm8uu }
+      files:
+        - "X_Gantry/8mm_bearing_adapter_x2_LM8UU.stl"
+    - when: { z_rod_bearing: lm8luu }
+      files:
+        - "X_Gantry/8mm_bearing_adapter_x2_LM8LUU.stl"
+    - when: { y_attachment: bearing_clips, nut_type: m3s, pulley_size: 16t }
+      files:
+        - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_M3S_16T.stl"
+    - when: { y_attachment: bearing_clips, nut_type: m3s, pulley_size: 20t }
+      files:
+        - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_M3S_20T.stl"
+    - when: { y_attachment: bearing_clips, nut_type: v0s, pulley_size: 16t }
+      files:
+        - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_V0S_16T.stl"
+    - when: { y_attachment: bearing_clips, nut_type: v0s, pulley_size: 20t }
+      files:
+        - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_Bearing_Clips_V0S_20T.stl"
+    - when: { y_attachment: u_bolts, nut_type: m3s, pulley_size: 16t }
+      files:
+        - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_M3S_16T.stl"
+    - when: { y_attachment: u_bolts, nut_type: m3s, pulley_size: 20t }
+      files:
+        - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_M3S_20T.stl"
+    - when: { y_attachment: u_bolts, nut_type: v0s, pulley_size: 16t }
+      files:
+        - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_V0S_16T.stl"
+    - when: { y_attachment: u_bolts, nut_type: v0s, pulley_size: 20t }
+      files:
+        - "Y_Axis/y_belt_tensioner_variations/y_belt_tensioner_U_Bolts_V0S_20T.stl"
+    - when: { z_rod: 10x320, pulley_size: 16t }
+      files:
+        - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_320mm_16T.stl"
+    - when: { z_rod: 10x325, pulley_size: 16t }
+      files:
+        - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_325mm_16T.stl"
+    - when: { z_rod: 10x330, pulley_size: 16t }
+      files:
+        - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_330mm_16T.stl"
+    - when: { z_rod: 10x341, pulley_size: 16t }
+      files:
+        - "XZ_Axis/Motor Mounts For 16T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_341mm_16T.stl"
+    - when: { z_rod: 8x320, pulley_size: 16t }
+      files:
+        - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_320mm_16T.stl"
+    - when: { z_rod: 8x325, pulley_size: 16t }
+      files:
+        - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_325mm_16T.stl"
+    - when: { z_rod: 8x330, pulley_size: 16t }
+      files:
+        - "XZ_Axis/Motor Mounts For 16T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_330mm_16T.stl"
+    - when: { z_rod: 10x320, pulley_size: 20t }
+      files:
+        - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_320mm_20T.stl"
+    - when: { z_rod: 10x325, pulley_size: 20t }
+      files:
+        - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_325mm_20T.stl"
+    - when: { z_rod: 10x330, pulley_size: 20t }
+      files:
+        - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_330mm_20T.stl"
+    - when: { z_rod: 10x341, pulley_size: 20t }
+      files:
+        - "XZ_Axis/Motor Mounts For 20T Pulleys/10mm Rod Motor Mounts/motor_mounts_10mm_341mm_20T.stl"
+    - when: { z_rod: 8x320, pulley_size: 20t }
+      files:
+        - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_320mm_20T.stl"
+    - when: { z_rod: 8x325, pulley_size: 20t }
+      files:
+        - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_325mm_20T.stl"
+    - when: { z_rod: 8x330, pulley_size: 20t }
+      files:
+        - "XZ_Axis/Motor Mounts For 20T Pulleys/8mm Rod Motor Mounts/motor_mounts_8mm_330mm_20T.stl"
+    - when: { z_rod: [10x320, 10x325, 10x330, 10x341], frame_type: mk3 }
+      files:
+        - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_10mm_diameter_MK3_frame.stl"
+    - when: { z_rod: [10x320, 10x325, 10x330, 10x341], frame_type: mk4 }
+      files:
+        - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_10mm_diameter_MK4_frame.stl"
+    - when: { z_rod: [8x320, 8x325, 8x330], frame_type: mk3 }
+      files:
+        - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_8mm_diameter_MK3_frame.stl"
+    - when: { z_rod: [8x320, 8x325, 8x330], frame_type: mk4 }
+      files:
+        - "XZ_Axis/Z Idler Blocks by Frame Type/[a]_idler_block_8mm_diameter_MK4_frame.stl"
+    - when: { nut_type: m3s, pulley_size: 16t }
+      files:
+        - "X_Gantry/16T XZ Joints/[a]_xz_blocks_M3Sx16T.stl"
+    - when: { nut_type: v0s, pulley_size: 16t }
+      files:
+        - "X_Gantry/16T XZ Joints/[a]_xz_blocks_V0Sx16T.stl"
+    - when: { nut_type: m3s, pulley_size: 20t }
+      files:
+        - "X_Gantry/20T XZ Joints/[a]_xz_blocks_M3Sx20T.stl"
+    - when: { nut_type: v0s, pulley_size: 20t }
+      files:
+        - "X_Gantry/20T XZ Joints/[a]_xz_blocks_V0Sx20T.stl"
+    - when: { nut_type: m3s }
+      files:
+        - "Y_Axis/y_rod_holder_front_M3S.stl"
+        - "Y_Axis/y_rod_holder_rear_M3S.stl"
+    - when: { nut_type: v0s }
+      files:
+        - "Y_Axis/y_rod_holder_front_V0S.stl"
+        - "Y_Axis/y_rod_holder_rear_V0S.stl"
 
 # Per-node overrides — displayName, category, hidden, visible (when/unless),
 # stl (download paths), visualOnly. Paths come from .scaffold.json's _nodes.
@@ -330,8 +433,8 @@ nodes:
   Y_Axis/Y_Motors_Combined:      { displayName: "Y Motor" }
 
   # Printed parts — displayName pinned to the STL filename.
-  Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/a_lcd_knob_mk3:  { displayName: "[a]_lcd_knob_mk3" }
-  Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/a_lcd_knob_mk3_tri_wing:  { displayName: "[a]_lcd_knob_tri_wing_mk3" }
+  Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/a_lcd_knob_mk3:  { displayName: "[a]_lcd_knob_mk3", visible: { when: { lcd_knob: switchwire } } }
+  Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/a_lcd_knob_mk3_tri_wing:  { displayName: "[a]_lcd_knob_tri_wing_mk3", visible: { when: { lcd_knob: tri_wing } } }
   Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/lcd_supports_mk3_v2:  { displayName: "lcd_supports_mk3", category: Main }
   Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/lcd_supports_mk3_v2_(1):  { displayName: "lcd_supports_mk3", category: Main }
   Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/mmu_lcd_cover_prusawire012/mmu_lcd_cover_prusawire001:  { category: Main }
@@ -415,14 +518,14 @@ nodes:
   # 20T XZ blocks and all rod-bearing adapter assemblies hidden by default.
   XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T:  { visible: { when: { pulley_size: 20t } } }
   XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T:  { visible: { when: { pulley_size: 20t } } }
-  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/Rod_Bearings/LM8LUU_Adapter_Assembly:  { hidden: true }
-  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/Rod_Bearings/LM8UU_Adapter_Assembly:  { hidden: true }
-  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/Rod_Bearings001/LM8LUU_Adapter_Assembly001:  { hidden: true }
-  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/Rod_Bearings001/LM8UU_Adapter_Assembly001:  { hidden: true }
-  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T/Rod_Bearings002/LM8LUU_Adapter_Assembly002:  { hidden: true }
-  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T/Rod_Bearings002/LM8UU_Adapter_Assembly002:  { hidden: true }
-  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/Rod_Bearings003/LM8LUU_Adapter_Assembly003:  { hidden: true }
-  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/Rod_Bearings003/LM8UU_Adapter_Assembly003:  { hidden: true }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/Rod_Bearings/LM8LUU_Adapter_Assembly:  { visible: { when: { z_rod_bearing: lm8luu } } }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/Rod_Bearings/LM8UU_Adapter_Assembly:  { visible: { when: { z_rod_bearing: lm8uu } } }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/Rod_Bearings001/LM8LUU_Adapter_Assembly001:  { visible: { when: { z_rod_bearing: lm8luu } } }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_20T/Rod_Bearings001/LM8UU_Adapter_Assembly001:  { visible: { when: { z_rod_bearing: lm8uu } } }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T/Rod_Bearings002/LM8LUU_Adapter_Assembly002:  { visible: { when: { z_rod_bearing: lm8luu } } }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_16T/Rod_Bearings002/LM8UU_Adapter_Assembly002:  { visible: { when: { z_rod_bearing: lm8uu } } }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/Rod_Bearings003/LM8LUU_Adapter_Assembly003:  { visible: { when: { z_rod_bearing: lm8luu } } }
+  XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/Rod_Bearings003/LM8UU_Adapter_Assembly003:  { visible: { when: { z_rod_bearing: lm8uu } } }
 
   # X-block variant names (derived from the [a]_xz_blocks STL set).
   XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Left/XZ_Block_-_Left_-_16T/a_x_block_front:  { displayName: "[a]_x_block_front_M3Sx16T", visible: { when: { nut_type: m3s } } }
@@ -442,8 +545,8 @@ nodes:
   XZ_Axis/XZ_Gantry/X_Axis_Assembly/XZ_Block_-_Right/XZ_Block_-_Right_-_20T/a_z_end_clip_R002/SOLID008:  { category: Accent }
 
   # Default configuration: 8x320 rods, 20T motors, and MAC-variant steppers hidden.
-  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/Linear_Rods_-_10x325mm_and_8x320mm001/Linear_Rod_-_8x320mm001:  { visible: { when: { rod_diameter: 8mm } } }
-  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Linear_Rods_-_10x325mm_and_8x320mm/Linear_Rod_-_8x320mm:  { visible: { when: { rod_diameter: 8mm } } }
+  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/Linear_Rods_-_10x325mm_and_8x320mm001/Linear_Rod_-_8x320mm001:  { visible: { when: { z_rod: 8x320 } } }
+  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Linear_Rods_-_10x325mm_and_8x320mm/Linear_Rod_-_8x320mm:  { visible: { when: { z_rod: 8x320 } } }
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_20T:  { visible: { when: { pulley_size: 20t } } }
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_20T:  { visible: { when: { pulley_size: 20t } } }
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_16T/LDO-42STH38-1684MAC002:  { hidden: true }
@@ -455,10 +558,10 @@ nodes:
 
 
   # Z upper idler variants.
-  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers:  { displayName: "Z Upper Idlers - 8mm MK4", visible: { when: { rod_diameter: 8mm, frame_type: mk4 } } }
-  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers001:  { displayName: "Z Upper Idlers - 8mm MK3", visible: { when: { rod_diameter: 8mm, frame_type: mk3 } } }
-  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers002:  { displayName: "Z Upper Idlers - 10mm MK4", visible: { when: { rod_diameter: 10mm, frame_type: mk4 } } }
-  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers003:  { displayName: "Z Upper Idlers - 10mm MK3", visible: { when: { rod_diameter: 10mm, frame_type: mk3 } } }
+  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers:  { displayName: "Z Upper Idlers - 8mm MK4", visible: { when: { z_rod: [8x320, 8x325, 8x330], frame_type: mk4 } } }
+  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers001:  { displayName: "Z Upper Idlers - 8mm MK3", visible: { when: { z_rod: [8x320, 8x325, 8x330], frame_type: mk3 } } }
+  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers002:  { displayName: "Z Upper Idlers - 10mm MK4", visible: { when: { z_rod: [10x320, 10x325, 10x330, 10x341], frame_type: mk4 } } }
+  XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers003:  { displayName: "Z Upper Idlers - 10mm MK3", visible: { when: { z_rod: [10x320, 10x325, 10x330, 10x341], frame_type: mk3 } } }
 
   # Idler block printed halves.
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/Idler_Block_-_Left/x_idler_block_b:  { category: Main }
@@ -478,6 +581,13 @@ nodes:
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_16T/Z_Mount_(1):  { displayName: "Z Motor Mount - 16T 8mm", category: Main }
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_20T/Z_Mount_(1)001:  { displayName: "Z Motor Mount - 20T 8mm", category: Main }
   XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Z_Motor/Z_Motor_-_20T/Z_Mount001:  { displayName: "Z Motor Mount - 20T 10mm", category: Main }
+
+  # Y-carriage attachment: bearing clips show for the default style; the
+  # tensioner in the GLB is the M3S/bearing-clip/16T variant.
+  Y_Axis/Bed_Assembly_(1)/Bed_Assembly/Bearing_Clip:  { visible: { when: { y_attachment: bearing_clips } } }
+  Y_Axis/Bed_Assembly_(1)/Bed_Assembly/Bearing_Clip001:  { visible: { when: { y_attachment: bearing_clips } } }
+  Y_Axis/Bed_Assembly_(1)/Bed_Assembly/Bearing_Clip002:  { visible: { when: { y_attachment: bearing_clips } } }
+  Y_Axis/Bed_Assembly_(1)/Y_Belt_Tensioner/M3S_Bearing_Clip_16T:  { visible: { when: { y_attachment: bearing_clips, nut_type: m3s, pulley_size: 16t } } }
 
   # Y rod holder printed bodies are SOLID* meshes — pin them Main so the
   # SOLID* Hidden rule cannot claim them (and they stay in the tree).

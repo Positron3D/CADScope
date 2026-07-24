@@ -264,6 +264,35 @@ class TestParse(unittest.TestCase):
         with self.assertRaises(SpecError):
             parse(text)
 
+    def test_choice_when_clause_parsed(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              bearing:
+                choices:
+                  - { id: big, default: true, when: { rod: [ten, eleven] } }
+                  - { id: small, when: { rod: eight } }
+                  - { id: any }
+        """).strip()
+        s = parse(text)
+        choices = s.options["bearing"]["choices"]
+        self.assertEqual(choices[0]["when"], {"rod": ["ten", "eleven"]})
+        self.assertEqual(choices[1]["when"], {"rod": "eight"})
+        self.assertNotIn("when", choices[2])
+
+    def test_choice_when_must_be_mapping(self):
+        text = textwrap.dedent("""
+            model: { name: T, glb: f.glb }
+            palette: { Main: { color: '#fff' } }
+            options:
+              bearing:
+                choices:
+                  - { id: big, when: nope }
+        """).strip()
+        with self.assertRaises(SpecError):
+            parse(text)
+
     def test_palette_show_in_tree_false_preserved(self):
         text = textwrap.dedent("""
             model: { name: T, glb: f.glb }

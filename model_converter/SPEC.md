@@ -160,8 +160,11 @@ carriage:
 ```
 
 `id` is required on each choice; `label` defaults to `id`; `description` is
-optional. One choice may be `default: true`; if none is flagged, the first is
-used. `type:` defaults to `radio`. Set `type: dropdown` to hint a collapsed
+optional. A choice may carry a `when:` clause (same grammar as
+`visible.when`) — the choice is offered only while the clause matches the
+active configuration, and the consumer auto-resets a selection whose choice
+becomes unavailable. One choice may be `default: true`; if none is flagged,
+the first is used. `type:` defaults to `radio`. Set `type: dropdown` to hint a collapsed
 `<select>` widget — typical for long choice lists.
 
 ### Boolean option

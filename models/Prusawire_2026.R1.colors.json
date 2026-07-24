@@ -385,7 +385,8 @@
       "displayName": "[a]_lcd_knob_mk3"
     },
     "Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/a_lcd_knob_mk3_tri_wing": {
-      "displayName": "[a]_lcd_knob_tri_wing_mk3"
+      "displayName": "[a]_lcd_knob_tri_wing_mk3",
+      "hidden": true
     },
     "Accessories/Front_Grill_&_Screen/LCD_-_Prusa_RepRapDiscount_2004/lcd_supports_mk3_v2": {
       "displayName": "lcd_supports_mk3",
