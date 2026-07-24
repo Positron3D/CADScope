@@ -737,6 +737,12 @@
     "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_X_Assembly/X_Motor/X_Motor_-_20T/LDO-42STH38-1684MAC005": {
       "hidden": true
     },
+    "Y_Axis/Y_Motors_Combined/Y_Motor_16T/LDO-42STH38-1684MAC": {
+      "hidden": true
+    },
+    "Y_Axis/Y_Motors_Combined/Y_Motor_20T/LDO-42STH38-1684MAC001": {
+      "hidden": true
+    },
     "XZ_Axis/XZ_Gantry/XZ_Axis_Assembly/XZ_Axis_-_Z_Assembly/Idler_Block_-_Right/Z_Upper_Idlers004/Z_Upper_Idlers": {
       "displayName": "Z Upper Idlers - 8mm MK4",
       "hidden": true
