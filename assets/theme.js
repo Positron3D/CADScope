@@ -9,3 +9,45 @@ export function resolveTheme(value) {
 export function nextTheme(theme) {
   return theme === 'dark' ? 'light' : 'dark';
 }
+
+const STORAGE_KEY = 'cadscope-theme';
+
+function storedTheme() {
+  try {
+    return localStorage.getItem(STORAGE_KEY);
+  } catch (e) {
+    return null;
+  }
+}
+
+function persistTheme(theme) {
+  try {
+    localStorage.setItem(STORAGE_KEY, theme);
+  } catch (e) {
+    // Storage unavailable; the choice lasts for this session only.
+  }
+}
+
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.documentElement.dataset.theme = 'light';
+  } else {
+    delete document.documentElement.dataset.theme;
+  }
+  document.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
+}
+
+// Wires the header switch: restores the saved theme, keeps the switch in
+// sync, persists changes, and emits themechange on every application.
+export function initTheme() {
+  let theme = resolveTheme(storedTheme());
+  applyTheme(theme);
+  const toggle = document.getElementById('themeToggle');
+  if (!toggle) return;
+  toggle.checked = theme === 'light';
+  toggle.addEventListener('change', () => {
+    theme = nextTheme(theme);
+    persistTheme(theme);
+    applyTheme(theme);
+  });
+}
