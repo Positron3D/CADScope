@@ -70,6 +70,13 @@ test('inverts negate the mapped axis', () => {
   assert.deepEqual(applyMat4ToVec3(remapMatrixFromMapping(m), [1, 0, 0]), [-1, 0, 0]);
 });
 
+test('special filament defaults to standard and migrates onto old saves', () => {
+  assert.equal(DEFAULT_SETTINGS.special.filament, 'standard');
+  // A pre-Special save (spacemouse only) gains the section on load.
+  const s = fakeStorage({ 'cadscope-settings': JSON.stringify({ spacemouse: { enabled: false } }) });
+  assert.equal(loadSettings(s).special.filament, 'standard');
+});
+
 test('default mapping shows each puck direction moving its own way', () => {
   const m = DEFAULT_SETTINGS.spacemouse.mapping;
   for (const dir of ['right', 'left', 'in', 'out', 'down', 'up']) {

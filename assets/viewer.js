@@ -296,7 +296,7 @@ function unhighlightObject() {
 
 // Populate model select from manifest
 const modelSelect = document.getElementById('modelSelect');
-const githubLink = document.querySelector('.header-links a');
+const githubLink = document.getElementById('modelGithubLink');
 models.forEach((entry, i) => {
   const opt = document.createElement('option');
   opt.value = entry.id;
@@ -324,7 +324,8 @@ function updateGithubLink(entry) {
 function updateURL() {
   const params = new URLSearchParams();
   params.set('model', currentEntry ? currentEntry.id : models[0].id);
-  if (coralFilament) params.set('filament', coralFilament);
+  const filament = effectiveFilament();
+  if (filament) params.set('filament', filament);
   if (currentLookups) {
     const pickerValues = new Map();
     for (const [name, picker] of categoryPickers) pickerValues.set(name, picker.value);
@@ -382,7 +383,29 @@ const urlModel = urlParams.get('model');
 if (urlModel && models.some(m => m.id === urlModel)) {
   modelSelect.value = urlModel;
 }
-const coralFilament = coralWaveMode(urlParams);
+// Settings load before the first updateURL() below — the effective
+// filament and the SpaceMouse remap state both read from them.
+const settings = loadSettings(localStorage);
+let remapR = remapMatrixFromMapping(settings.spacemouse.mapping);
+let remapRt = mat4Transpose(remapR);
+let remapIdentity = isIdentityMapping(settings.spacemouse.mapping);
+let smSocket = null;
+let spaceMouseDriving = false;
+
+function refreshRemap() {
+  remapR = remapMatrixFromMapping(settings.spacemouse.mapping);
+  remapRt = mat4Transpose(remapR);
+  remapIdentity = isIdentityMapping(settings.spacemouse.mapping);
+}
+
+// Coral Wave can come from the URL (share links) or the settings panel;
+// a panel change clears the URL override and takes over.
+let urlFilament = coralWaveMode(urlParams);
+
+function effectiveFilament() {
+  if (urlFilament) return urlFilament;
+  return settings.special.filament === 'standard' ? null : settings.special.filament;
+}
 // Decode share state once at startup; `applySharedState` consumes it after
 // the model has loaded and the tree is built. readShareFromParams returns
 // {} when there are no codec params; null when present-but-malformed.
@@ -626,8 +649,9 @@ function coralHilbertTexture() {
 }
 
 function applyCoralWaveIfActive() {
-  if (!coralFilament) return;
-  const hilbert = coralFilament === 'coralwavehilbert';
+  const filament = effectiveFilament();
+  if (!filament) return;
+  const hilbert = filament === 'coralwavehilbert';
   for (const mesh of categoryMeshes.get('Accent') || []) {
     const box = new THREE.Box3().setFromObject(mesh);
     patchMaterial(mesh.material, {
@@ -1273,18 +1297,6 @@ window.resetZoom = function() {
 // The settings panel gates the connection and remaps axes by conjugating
 // all traffic with a signed-permutation matrix R (driver world → viewer
 // world): reads serve Rᵀ·M / Rᵀ·v, writes apply R·M / R·v.
-const settings = loadSettings(localStorage);
-let remapR = remapMatrixFromMapping(settings.spacemouse.mapping);
-let remapRt = mat4Transpose(remapR);
-let remapIdentity = isIdentityMapping(settings.spacemouse.mapping);
-let smSocket = null;
-let spaceMouseDriving = false;
-
-function refreshRemap() {
-  remapR = remapMatrixFromMapping(settings.spacemouse.mapping);
-  remapRt = mat4Transpose(remapR);
-  remapIdentity = isIdentityMapping(settings.spacemouse.mapping);
-}
 
 function readMatrix(m) { return remapIdentity ? m : mat4Multiply(remapRt, m); }
 function readVec(v) { return remapIdentity ? v : applyMat4ToVec3(remapRt, v); }
@@ -1425,12 +1437,26 @@ connectSpaceMouse();
     }
   }
 
+  const FILAMENT_LABELS = {
+    standard: 'Standard', coralwave: 'Coral Wave', coralwavehilbert: 'Coral Wave Hilbert',
+  };
+  {
+    const select = document.getElementById('spFilament');
+    for (const [value, label] of Object.entries(FILAMENT_LABELS)) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      select.appendChild(option);
+    }
+  }
+
   function render() {
     document.getElementById('smEnabled').checked = settings.spacemouse.enabled;
     for (const [dir, id] of Object.entries(directions)) {
       document.getElementById(id).value = actionForDirection(mapping(), dir);
     }
     document.getElementById('smSwap').checked = isSwapPreset(mapping());
+    document.getElementById('spFilament').value = effectiveFilament() || 'standard';
   }
 
   function commit() {
@@ -1452,6 +1478,18 @@ connectSpaceMouse();
       commit();
     });
   }
+
+  document.getElementById('spFilament').addEventListener('change', (e) => {
+    settings.special.filament = e.target.value;
+    urlFilament = null;   // the panel choice supersedes any share-link param
+    commit();
+    if (currentLookups && currentModel) {
+      applyColorSet(currentLookups, currentModel);
+      applyCoralWaveIfActive();
+    }
+    updateURL();
+    requestRender();
+  });
 
   document.getElementById('smSwap').addEventListener('change', (e) => {
     settings.spacemouse.mapping = e.target.checked

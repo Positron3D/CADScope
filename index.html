@@ -25,6 +25,7 @@
     <header class="header">
       <div class="logo">
         <h1>CADScope</h1>
+        <a id="modelGithubLink" href="https://github.com/erikbuild/CADScope" target="_blank">GitHub</a>
       </div>
       <div class="header-links">
         <label class="theme-switch">
@@ -34,7 +35,6 @@
           <span aria-hidden="true">☀</span>
         </label>
         <button id="settingsBtn" class="settings-btn" type="button" aria-label="Settings">⚙</button>
-        <a href="https://github.com/erikbuild/CADScope" target="_blank">GitHub</a>
       </div>
     </header>
 
@@ -120,7 +120,7 @@
 
         <!-- Attribution -->
         <div class="attribution">
-          <a href="https://github.com/erikbuild/CADScope" target="_blank">CADScope v1.8.1</a> by <a href="https://github.com/erikbuild" target="_blank">@erikbuild</a>
+          <a href="https://github.com/erikbuild/CADScope" target="_blank">CADScope v1.9.0</a> by <a href="https://github.com/erikbuild" target="_blank">@erikbuild</a>
         </div>
       </div>
     </main>
@@ -142,6 +142,10 @@
           <div class="sm-row"><span>Up</span><select id="smDirUp"></select></div>
         </div>
         <label class="settings-check"><input type="checkbox" id="smSwap"> Swap In-Out and Down-Up</label>
+      </section>
+      <section class="settings-section">
+        <h3>Special</h3>
+        <div class="sm-row"><span>Filament</span><select id="spFilament"></select></div>
       </section>
       <button id="settingsClose" type="button">Close</button>
     </div>

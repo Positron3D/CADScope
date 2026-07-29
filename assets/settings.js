@@ -12,6 +12,9 @@ export const DEFAULT_SETTINGS = Object.freeze({
       ud: { pair: 'y', invert: false },   // Up/Down
     },
   },
+  special: {
+    filament: 'standard',   // 'standard' | 'coralwave' | 'coralwavehilbert'
+  },
 });
 
 function isPlainObject(v) {
