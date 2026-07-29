@@ -6,6 +6,7 @@ import {
   DEFAULT_SETTINGS, loadSettings, saveSettings, normalizeMapping,
   applySwapPreset, isSwapPreset, remapMatrixFromMapping, isIdentityMapping,
   mat4Multiply, mat4Transpose, applyMat4ToVec3,
+  actionForDirection, setDirectionAction,
 } from '../assets/settings.js';
 
 const fakeStorage = (seed = {}) => {
@@ -67,6 +68,38 @@ test('inverts negate the mapped axis', () => {
   const m = structuredClone(DEFAULT_SETTINGS.spacemouse.mapping);
   m.lr.invert = true;
   assert.deepEqual(applyMat4ToVec3(remapMatrixFromMapping(m), [1, 0, 0]), [-1, 0, 0]);
+});
+
+test('default mapping shows each puck direction moving its own way', () => {
+  const m = DEFAULT_SETTINGS.spacemouse.mapping;
+  for (const dir of ['right', 'left', 'in', 'out', 'down', 'up']) {
+    assert.equal(actionForDirection(m, dir), dir);
+  }
+});
+
+test('setting a direction to an action retargets its axis and syncs the partner', () => {
+  const m = setDirectionAction(structuredClone(DEFAULT_SETTINGS.spacemouse.mapping), 'right', 'up');
+  assert.equal(actionForDirection(m, 'right'), 'up');
+  assert.equal(actionForDirection(m, 'left'), 'down');   // opposite end of the same axis
+  // Up/Down previously owned Y; it received the displaced X pair.
+  assert.equal(actionForDirection(m, 'up'), 'right');
+  assert.equal(actionForDirection(m, 'down'), 'left');
+  assert.equal(actionForDirection(m, 'in'), 'in');       // untouched row
+});
+
+test('mapping a direction to its opposite action is an inversion', () => {
+  const m = setDirectionAction(structuredClone(DEFAULT_SETTINGS.spacemouse.mapping), 'left', 'right');
+  assert.equal(m.lr.pair, 'x');
+  assert.equal(m.lr.invert, true);
+  assert.equal(actionForDirection(m, 'right'), 'left');
+});
+
+test('swap preset reads as in→down and up→out in direction terms', () => {
+  const m = applySwapPreset(structuredClone(DEFAULT_SETTINGS.spacemouse.mapping));
+  assert.equal(actionForDirection(m, 'in'), 'down');
+  assert.equal(actionForDirection(m, 'out'), 'up');
+  assert.equal(actionForDirection(m, 'up'), 'out');
+  assert.equal(actionForDirection(m, 'down'), 'in');
 });
 
 test('R times its transpose is identity for every permutation and invert combo', () => {

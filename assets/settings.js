@@ -80,6 +80,52 @@ export function isIdentityMapping(mapping) {
     mapping[row].pair === d[row].pair && mapping[row].invert === false);
 }
 
+// Puck directions ↔ signed halves of the three mapping rows. World axis
+// halves are named after the motions they produce by default: ±X =
+// right/left, ±Y = up/down, ±Z = out/in.
+const DIRECTIONS = {
+  right: { row: 'lr', sign: 1 },
+  left:  { row: 'lr', sign: -1 },
+  out:   { row: 'io', sign: 1 },
+  in:    { row: 'io', sign: -1 },
+  up:    { row: 'ud', sign: 1 },
+  down:  { row: 'ud', sign: -1 },
+};
+
+const AXIS_ACTIONS = {
+  x: { 1: 'right', [-1]: 'left' },
+  y: { 1: 'up', [-1]: 'down' },
+  z: { 1: 'out', [-1]: 'in' },
+};
+
+const ACTION_AXES = {
+  right: { pair: 'x', sign: 1 },
+  left:  { pair: 'x', sign: -1 },
+  up:    { pair: 'y', sign: 1 },
+  down:  { pair: 'y', sign: -1 },
+  out:   { pair: 'z', sign: 1 },
+  in:    { pair: 'z', sign: -1 },
+};
+
+// The motion action a puck direction currently performs, e.g. 'right'.
+export function actionForDirection(mapping, direction) {
+  const { row, sign } = DIRECTIONS[direction];
+  const entry = mapping[row];
+  return AXIS_ACTIONS[entry.pair][sign * (entry.invert ? -1 : 1)];
+}
+
+// Retargets a puck direction to a motion action. The opposite direction
+// follows automatically (same physical axis); the row that owned the
+// action's axis receives the displaced one via normalizeMapping.
+export function setDirectionAction(mapping, direction, action) {
+  const { row, sign } = DIRECTIONS[direction];
+  const target = ACTION_AXES[action];
+  const out = structuredClone(mapping);
+  out[row].pair = target.pair;
+  out[row].invert = target.sign * sign < 0;
+  return normalizeMapping(out, row);
+}
+
 const AXIS_ROW = { x: 0, y: 1, z: 2 };
 
 // Column-major signed permutation. Driver space convention: Left/Right is

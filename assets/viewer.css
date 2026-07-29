@@ -840,7 +840,7 @@ input[type="range"]::-moz-range-thumb {
 
 .sm-row {
   display: grid;
-  grid-template-columns: 90px 1fr auto;
+  grid-template-columns: 60px 1fr;
   align-items: center;
   gap: 10px;
   margin: 6px 0;

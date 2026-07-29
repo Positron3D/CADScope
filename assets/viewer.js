@@ -17,8 +17,9 @@ import { treeLabel } from './prettify.js';
 import { coralWaveMode, splitUniformsForBox, patchMaterial, drawHilbertPattern } from './coralwave.js';
 import { createSession, NL_URL, NL_SUBPROTOCOL } from './spacemouse.js';
 import {
-  loadSettings, saveSettings, normalizeMapping, applySwapPreset, isSwapPreset,
+  loadSettings, saveSettings, applySwapPreset, isSwapPreset,
   remapMatrixFromMapping, isIdentityMapping, mat4Multiply, mat4Transpose, applyMat4ToVec3,
+  actionForDirection, setDirectionAction,
 } from './settings.js';
 import { initTheme } from './theme.js';
 
@@ -114,7 +115,9 @@ function requestRender() {
   requestAnimationFrame(() => {
     renderQueued = false;
     const stillAnimating = tickCameraAnimation();
-    if (!stillAnimating) controls.update();
+    // OrbitControls.update() re-aims the camera at controls.target, which
+    // would cancel externally driven motion (animations, SpaceMouse pans).
+    if (!stillAnimating && !spaceMouseDriving) controls.update();
     renderer.render(scene, camera);
     if (stillAnimating) requestRender();
   });
@@ -1275,6 +1278,7 @@ let remapR = remapMatrixFromMapping(settings.spacemouse.mapping);
 let remapRt = mat4Transpose(remapR);
 let remapIdentity = isIdentityMapping(settings.spacemouse.mapping);
 let smSocket = null;
+let spaceMouseDriving = false;
 
 function refreshRemap() {
   remapR = remapMatrixFromMapping(settings.spacemouse.mapping);
@@ -1359,7 +1363,17 @@ function connectSpaceMouse() {
           if (value === 0) requestRender();
           break;
         case 'motion':
-          if (value === false) updateURL();
+          spaceMouseDriving = value === true;
+          if (value === false) {
+            // Re-seat the orbit target along the camera's final view axis at
+            // the prior target distance, so mouse orbiting pivots where the
+            // SpaceMouse left the view (and the next lookAt is a no-op).
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            const distance = camera.position.distanceTo(controls.target);
+            controls.target.copy(camera.position).addScaledVector(forward, distance);
+            updateURL();
+            requestRender();
+          }
           break;
       }
     },
@@ -1392,13 +1406,18 @@ connectSpaceMouse();
 (function initSettingsPanel() {
   const modal = document.getElementById('settingsModal');
   const mapping = () => settings.spacemouse.mapping;
-  const rows = { lr: 'smRowLr', io: 'smRowIo', ud: 'smRowUd' };
-  const inverts = { lr: 'smInvLr', io: 'smInvIo', ud: 'smInvUd' };
-  const AXIS_LABELS = { x: 'X axis', y: 'Y axis', z: 'Z axis' };
+  const directions = {
+    right: 'smDirRight', left: 'smDirLeft', in: 'smDirIn',
+    out: 'smDirOut', down: 'smDirDown', up: 'smDirUp',
+  };
+  const ACTION_LABELS = {
+    right: 'Move Right', left: 'Move Left', in: 'Move In',
+    out: 'Move Out', down: 'Move Down', up: 'Move Up',
+  };
 
-  for (const id of Object.values(rows)) {
+  for (const id of Object.values(directions)) {
     const select = document.getElementById(id);
-    for (const [value, label] of Object.entries(AXIS_LABELS)) {
+    for (const [value, label] of Object.entries(ACTION_LABELS)) {
       const option = document.createElement('option');
       option.value = value;
       option.textContent = label;
@@ -1408,8 +1427,9 @@ connectSpaceMouse();
 
   function render() {
     document.getElementById('smEnabled').checked = settings.spacemouse.enabled;
-    for (const [row, id] of Object.entries(rows)) document.getElementById(id).value = mapping()[row].pair;
-    for (const [row, id] of Object.entries(inverts)) document.getElementById(id).checked = mapping()[row].invert;
+    for (const [dir, id] of Object.entries(directions)) {
+      document.getElementById(id).value = actionForDirection(mapping(), dir);
+    }
     document.getElementById('smSwap').checked = isSwapPreset(mapping());
   }
 
@@ -1426,18 +1446,9 @@ connectSpaceMouse();
     else disconnectSpaceMouse();
   });
 
-  for (const [row, id] of Object.entries(rows)) {
+  for (const [dir, id] of Object.entries(directions)) {
     document.getElementById(id).addEventListener('change', (e) => {
-      const next = structuredClone(mapping());
-      next[row].pair = e.target.value;
-      settings.spacemouse.mapping = normalizeMapping(next, row);
-      commit();
-    });
-  }
-
-  for (const [row, id] of Object.entries(inverts)) {
-    document.getElementById(id).addEventListener('change', (e) => {
-      settings.spacemouse.mapping[row].invert = e.target.checked;
+      settings.spacemouse.mapping = setDirectionAction(mapping(), dir, e.target.value);
       commit();
     });
   }
