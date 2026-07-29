@@ -14,7 +14,7 @@ import {
   collectColorOverrides,
 } from './cadscope_state.js';
 import { treeLabel } from './prettify.js';
-import { coralWaveRequested, splitUniformsForBox, patchMaterial } from './coralwave.js';
+import { coralWaveRequested, splitUniformsForBox, patchMaterial, drawHilbertPattern } from './coralwave.js';
 import { initTheme } from './theme.js';
 
 const hdriLocation = "./assets/bg.hdr";
@@ -602,12 +602,29 @@ function applyColorSet(lookups, model) {
 }
 
 // Coral Wave easter egg (?filament=coralwave): Accent parts render as
-// dual-extruded teal/magenta filament split about each part's centerline.
+// dual-extruded teal/magenta filament split about each part's centerline,
+// with the hilbert bottom-layer pattern on out-facing flats.
+let hilbertTexture = null;
+function coralHilbertTexture() {
+  if (!hilbertTexture) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 1024;
+    drawHilbertPattern(canvas.getContext('2d'), 1024, 6);
+    hilbertTexture = new THREE.CanvasTexture(canvas);
+    hilbertTexture.wrapS = hilbertTexture.wrapT = THREE.RepeatWrapping;
+  }
+  return hilbertTexture;
+}
+
 function applyCoralWaveIfActive() {
   if (!coralWaveActive) return;
   for (const mesh of categoryMeshes.get('Accent') || []) {
     const box = new THREE.Box3().setFromObject(mesh);
-    patchMaterial(mesh.material, splitUniformsForBox(box));
+    patchMaterial(mesh.material, {
+      ...splitUniformsForBox(box),
+      hilbertTex: coralHilbertTexture(),
+      hilbertScale: 0.128,
+    });
   }
 }
 
