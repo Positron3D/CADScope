@@ -70,6 +70,10 @@ test('inverts negate the mapped axis', () => {
   assert.deepEqual(applyMat4ToVec3(remapMatrixFromMapping(m), [1, 0, 0]), [-1, 0, 0]);
 });
 
+test('SpaceMouse defaults to disabled so visitors get no device prompt', () => {
+  assert.equal(DEFAULT_SETTINGS.spacemouse.enabled, false);
+});
+
 test('special filament defaults to standard and migrates onto old saves', () => {
   assert.equal(DEFAULT_SETTINGS.special.filament, 'standard');
   // A pre-Special save (spacemouse only) gains the section on load.
