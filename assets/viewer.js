@@ -14,7 +14,7 @@ import {
   collectColorOverrides,
 } from './cadscope_state.js';
 import { treeLabel } from './prettify.js';
-import { coralWaveRequested, splitUniformsForBox, patchMaterial, drawHilbertPattern } from './coralwave.js';
+import { coralWaveMode, splitUniformsForBox, patchMaterial, drawHilbertPattern } from './coralwave.js';
 import { initTheme } from './theme.js';
 
 const hdriLocation = "./assets/bg.hdr";
@@ -316,7 +316,7 @@ function updateGithubLink(entry) {
 function updateURL() {
   const params = new URLSearchParams();
   params.set('model', currentEntry ? currentEntry.id : models[0].id);
-  if (coralWaveActive) params.set('filament', 'coralwave');
+  if (coralFilament) params.set('filament', coralFilament);
   if (currentLookups) {
     const pickerValues = new Map();
     for (const [name, picker] of categoryPickers) pickerValues.set(name, picker.value);
@@ -374,7 +374,7 @@ const urlModel = urlParams.get('model');
 if (urlModel && models.some(m => m.id === urlModel)) {
   modelSelect.value = urlModel;
 }
-const coralWaveActive = coralWaveRequested(urlParams);
+const coralFilament = coralWaveMode(urlParams);
 // Decode share state once at startup; `applySharedState` consumes it after
 // the model has loaded and the tree is built. readShareFromParams returns
 // {} when there are no codec params; null when present-but-malformed.
@@ -601,9 +601,10 @@ function applyColorSet(lookups, model) {
   }
 }
 
-// Coral Wave easter egg (?filament=coralwave): Accent parts render as
-// dual-extruded teal/magenta filament split about each part's centerline,
-// with the hilbert bottom-layer pattern on out-facing flats.
+// Coral Wave easter egg: Accent parts render as dual-extruded teal/magenta
+// filament split about each part's centerline. ?filament=coralwave gives the
+// plain split; ?filament=coralwavehilbert adds the hilbert bottom-layer
+// pattern on out-facing flats.
 let hilbertTexture = null;
 function coralHilbertTexture() {
   if (!hilbertTexture) {
@@ -617,12 +618,13 @@ function coralHilbertTexture() {
 }
 
 function applyCoralWaveIfActive() {
-  if (!coralWaveActive) return;
+  if (!coralFilament) return;
+  const hilbert = coralFilament === 'coralwavehilbert';
   for (const mesh of categoryMeshes.get('Accent') || []) {
     const box = new THREE.Box3().setFromObject(mesh);
     patchMaterial(mesh.material, {
       ...splitUniformsForBox(box),
-      hilbertTex: coralHilbertTexture(),
+      hilbertTex: hilbert ? coralHilbertTexture() : null,
       hilbertScale: 0.128,
     });
   }

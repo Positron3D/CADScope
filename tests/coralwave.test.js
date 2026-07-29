@@ -5,17 +5,19 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  coralWaveRequested, splitUniformsForBox,
+  coralWaveMode, splitUniformsForBox,
   CORAL_TEAL, CORAL_MAGENTA, patchMaterial, CORAL_GLSL,
   hilbertCurve, drawHilbertPattern,
 } from '../assets/coralwave.js';
 
-test('coralWaveRequested only for filament=coralwave', () => {
-  assert.equal(coralWaveRequested(new URLSearchParams('?filament=coralwave')), true);
-  assert.equal(coralWaveRequested(new URLSearchParams('?filament=CoralWave')), true);
-  assert.equal(coralWaveRequested(new URLSearchParams('?filament=pla')), false);
-  assert.equal(coralWaveRequested(new URLSearchParams('?model=x')), false);
-  assert.equal(coralWaveRequested(new URLSearchParams('')), false);
+test('coralWaveMode distinguishes plain, hilbert, and off', () => {
+  assert.equal(coralWaveMode(new URLSearchParams('?filament=coralwave')), 'coralwave');
+  assert.equal(coralWaveMode(new URLSearchParams('?filament=CoralWave')), 'coralwave');
+  assert.equal(coralWaveMode(new URLSearchParams('?filament=coralwavehilbert')), 'coralwavehilbert');
+  assert.equal(coralWaveMode(new URLSearchParams('?filament=CoralWaveHilbert')), 'coralwavehilbert');
+  assert.equal(coralWaveMode(new URLSearchParams('?filament=pla')), null);
+  assert.equal(coralWaveMode(new URLSearchParams('?model=x')), null);
+  assert.equal(coralWaveMode(new URLSearchParams('')), null);
 });
 
 test('splitUniformsForBox centers the divide and scales the blend', () => {

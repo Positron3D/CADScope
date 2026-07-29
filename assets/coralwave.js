@@ -10,8 +10,9 @@ const BLEND_FRACTION = 0.08;     // blend band as a fraction of part width
 const WAVE_CYCLES = 6;           // boundary undulations over the part's height
 const WAVE_AMP_FRACTION = 0.35;  // wave amplitude relative to the blend half-width
 
-export function coralWaveRequested(urlParams) {
-  return (urlParams.get('filament') || '').toLowerCase() === 'coralwave';
+export function coralWaveMode(urlParams) {
+  const value = (urlParams.get('filament') || '').toLowerCase();
+  return (value === 'coralwave' || value === 'coralwavehilbert') ? value : null;
 }
 
 export function splitUniformsForBox(box) {
