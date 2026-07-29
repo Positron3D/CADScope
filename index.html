@@ -33,6 +33,7 @@
           <span class="theme-switch-track" aria-hidden="true"></span>
           <span aria-hidden="true">☀</span>
         </label>
+        <button id="settingsBtn" class="settings-btn" type="button" aria-label="Settings">⚙</button>
         <a href="https://github.com/erikbuild/CADScope" target="_blank">GitHub</a>
       </div>
     </header>
@@ -123,6 +124,24 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <div id="settingsModal" class="settings-modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-backdrop"></div>
+    <div class="settings-dialog">
+      <h2 id="settingsTitle">Settings</h2>
+      <section class="settings-section">
+        <h3>SpaceMouse</h3>
+        <label class="settings-check"><input type="checkbox" id="smEnabled"> Enable SpaceMouse</label>
+        <div class="sm-mapping">
+          <div class="sm-row"><span>Left / Right</span><select id="smRowLr"></select><label class="settings-check"><input type="checkbox" id="smInvLr"> Invert</label></div>
+          <div class="sm-row"><span>In / Out</span><select id="smRowIo"></select><label class="settings-check"><input type="checkbox" id="smInvIo"> Invert</label></div>
+          <div class="sm-row"><span>Up / Down</span><select id="smRowUd"></select><label class="settings-check"><input type="checkbox" id="smInvUd"> Invert</label></div>
+        </div>
+        <label class="settings-check"><input type="checkbox" id="smSwap"> Swap In-Out and Down-Up</label>
+      </section>
+      <button id="settingsClose" type="button">Close</button>
+    </div>
   </div>
 
   <script type="importmap">

@@ -16,6 +16,10 @@ import {
 import { treeLabel } from './prettify.js';
 import { coralWaveMode, splitUniformsForBox, patchMaterial, drawHilbertPattern } from './coralwave.js';
 import { createSession, NL_URL, NL_SUBPROTOCOL } from './spacemouse.js';
+import {
+  loadSettings, saveSettings, normalizeMapping, applySwapPreset, isSwapPreset,
+  remapMatrixFromMapping, isIdentityMapping, mat4Multiply, mat4Transpose, applyMat4ToVec3,
+} from './settings.js';
 import { initTheme } from './theme.js';
 
 const hdriLocation = "./assets/bg.hdr";
@@ -1263,13 +1267,38 @@ window.resetZoom = function() {
 // SpaceMouse support: navlib session against the local 3DxNLServer. The
 // driver computes all motion (and handles the built-in Fit/view buttons)
 // from the properties served here; machines without the driver stay dormant.
-(function connectSpaceMouse() {
+// The settings panel gates the connection and remaps axes by conjugating
+// all traffic with a signed-permutation matrix R (driver world → viewer
+// world): reads serve Rᵀ·M / Rᵀ·v, writes apply R·M / R·v.
+const settings = loadSettings(localStorage);
+let remapR = remapMatrixFromMapping(settings.spacemouse.mapping);
+let remapRt = mat4Transpose(remapR);
+let remapIdentity = isIdentityMapping(settings.spacemouse.mapping);
+let smSocket = null;
+
+function refreshRemap() {
+  remapR = remapMatrixFromMapping(settings.spacemouse.mapping);
+  remapRt = mat4Transpose(remapR);
+  remapIdentity = isIdentityMapping(settings.spacemouse.mapping);
+}
+
+function readMatrix(m) { return remapIdentity ? m : mat4Multiply(remapRt, m); }
+function readVec(v) { return remapIdentity ? v : applyMat4ToVec3(remapRt, v); }
+function writeMatrix(m) { return remapIdentity ? m : mat4Multiply(remapR, m); }
+function writeVec(v) { return remapIdentity ? v : applyMat4ToVec3(remapR, v); }
+
+function connectSpaceMouse() {
+  if (!settings.spacemouse.enabled) {
+    console.log('[spacemouse] disabled');
+    return;
+  }
   let ws;
   try {
     ws = new WebSocket(NL_URL, NL_SUBPROTOCOL);
   } catch {
     return;
   }
+  smSocket = ws;
   let registered = false;
 
   function frustum() {
@@ -1283,24 +1312,31 @@ window.resetZoom = function() {
     now: Date.now,
     readProperty: (name) => {
       switch (name) {
-        case 'view.affine': camera.updateMatrixWorld(); return camera.matrixWorld.toArray();
+        case 'view.affine': camera.updateMatrixWorld(); return readMatrix(camera.matrixWorld.toArray());
         case 'view.perspective': return true;
         case 'view.fov': return (camera.fov * Math.PI) / 180;
         case 'view.frustum': return frustum();
-        case 'view.target': return controls.target.toArray();
+        case 'view.target': return readVec(controls.target.toArray());
         case 'view.rotatable': return true;
         case 'model.extents': {
           if (!currentModel) return undefined;
           const box = new THREE.Box3().setFromObject(currentModel);
-          return [box.min.x, box.min.y, box.min.z, box.max.x, box.max.y, box.max.z];
+          if (remapIdentity) return [box.min.x, box.min.y, box.min.z, box.max.x, box.max.y, box.max.z];
+          const lo = [Infinity, Infinity, Infinity];
+          const hi = [-Infinity, -Infinity, -Infinity];
+          for (const x of [box.min.x, box.max.x]) for (const y of [box.min.y, box.max.y]) for (const z of [box.min.z, box.max.z]) {
+            const c = applyMat4ToVec3(remapRt, [x, y, z]);
+            for (let i = 0; i < 3; i++) { lo[i] = Math.min(lo[i], c[i]); hi[i] = Math.max(hi[i], c[i]); }
+          }
+          return [...lo, ...hi];
         }
         case 'model.unitsToMeters': return 1;
         case 'selection.empty': return true;
         case 'views.front': {
           const pose = poseFromDirection(Z_FWD, Y_UP);
-          return new THREE.Matrix4()
+          return readMatrix(new THREE.Matrix4()
             .compose(pose.position, pose.quaternion, new THREE.Vector3(1, 1, 1))
-            .toArray();
+            .toArray());
         }
         case 'coordinateSystem': return new THREE.Matrix4().toArray();
         case 'hit.lookat': return null;
@@ -1311,13 +1347,13 @@ window.resetZoom = function() {
       switch (name) {
         case 'view.affine': {
           cameraAnimation = null;
-          const m = new THREE.Matrix4().fromArray(value);
+          const m = new THREE.Matrix4().fromArray(writeMatrix(value));
           m.decompose(camera.position, camera.quaternion, new THREE.Vector3());
           camera.updateMatrixWorld();
           break;
         }
         case 'view.target':
-          controls.target.fromArray(value);
+          controls.target.fromArray(writeVec(value));
           break;
         case 'transaction':
           if (value === 0) requestRender();
@@ -1331,6 +1367,7 @@ window.resetZoom = function() {
       registered = true;
       console.log('[spacemouse] registered');
       (function pump() {
+        if (ws !== smSocket) return;   // superseded by disconnect/reconnect
         session.pumpFrame();
         requestAnimationFrame(pump);
       })();
@@ -1339,6 +1376,87 @@ window.resetZoom = function() {
 
   ws.onmessage = (ev) => session.onMessage(ev.data);
   ws.onerror = () => { if (!registered) console.log('[spacemouse] no 3DxNLServer — dormant'); };
+}
+
+function disconnectSpaceMouse() {
+  if (smSocket) {
+    smSocket.close();
+    smSocket = null;
+    console.log('[spacemouse] disconnected');
+  }
+}
+
+connectSpaceMouse();
+
+// Settings modal: renders from the settings object and applies changes live.
+(function initSettingsPanel() {
+  const modal = document.getElementById('settingsModal');
+  const mapping = () => settings.spacemouse.mapping;
+  const rows = { lr: 'smRowLr', io: 'smRowIo', ud: 'smRowUd' };
+  const inverts = { lr: 'smInvLr', io: 'smInvIo', ud: 'smInvUd' };
+  const AXIS_LABELS = { x: 'X axis', y: 'Y axis', z: 'Z axis' };
+
+  for (const id of Object.values(rows)) {
+    const select = document.getElementById(id);
+    for (const [value, label] of Object.entries(AXIS_LABELS)) {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      select.appendChild(option);
+    }
+  }
+
+  function render() {
+    document.getElementById('smEnabled').checked = settings.spacemouse.enabled;
+    for (const [row, id] of Object.entries(rows)) document.getElementById(id).value = mapping()[row].pair;
+    for (const [row, id] of Object.entries(inverts)) document.getElementById(id).checked = mapping()[row].invert;
+    document.getElementById('smSwap').checked = isSwapPreset(mapping());
+  }
+
+  function commit() {
+    saveSettings(localStorage, settings);
+    refreshRemap();
+    render();
+  }
+
+  document.getElementById('smEnabled').addEventListener('change', (e) => {
+    settings.spacemouse.enabled = e.target.checked;
+    commit();
+    if (settings.spacemouse.enabled) connectSpaceMouse();
+    else disconnectSpaceMouse();
+  });
+
+  for (const [row, id] of Object.entries(rows)) {
+    document.getElementById(id).addEventListener('change', (e) => {
+      const next = structuredClone(mapping());
+      next[row].pair = e.target.value;
+      settings.spacemouse.mapping = normalizeMapping(next, row);
+      commit();
+    });
+  }
+
+  for (const [row, id] of Object.entries(inverts)) {
+    document.getElementById(id).addEventListener('change', (e) => {
+      settings.spacemouse.mapping[row].invert = e.target.checked;
+      commit();
+    });
+  }
+
+  document.getElementById('smSwap').addEventListener('change', (e) => {
+    settings.spacemouse.mapping = e.target.checked
+      ? applySwapPreset(mapping())
+      : structuredClone(loadSettings({ getItem: () => null }).spacemouse.mapping);
+    commit();
+  });
+
+  const open = () => { render(); modal.classList.remove('hidden'); };
+  const close = () => modal.classList.add('hidden');
+  document.getElementById('settingsBtn').addEventListener('click', open);
+  document.getElementById('settingsClose').addEventListener('click', close);
+  modal.querySelector('.settings-backdrop').addEventListener('click', close);
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !modal.classList.contains('hidden')) close();
+  });
 })();
 
 // Initial render — every interactive control invalidates via requestRender()
