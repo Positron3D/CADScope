@@ -40,5 +40,13 @@ export const models = [
     colors: "models/Positron_v3.2.2.colors.json",
     github: "https://github.com/Positron3D/Positron",
     github_text: "Positron V3.2.2 by Positron 3D on GitHub"
+  },
+  {
+    id: "Milo_V2.RC3",
+    name: "Milo V2 RC3",
+    model: "models/Milo_V2.RC3.glb",
+    colors: "models/Milo_V2.RC3.colors.json",
+    github: "https://github.com/MillenniumMachines/Milo-V2.0",
+    github_text: "Milo V2 by Millennium Machines on GitHub"
   }
 ];
