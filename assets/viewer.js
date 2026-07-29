@@ -15,6 +15,7 @@ import {
 } from './cadscope_state.js';
 import { treeLabel } from './prettify.js';
 import { coralWaveMode, splitUniformsForBox, patchMaterial, drawHilbertPattern } from './coralwave.js';
+import { createSession, NL_URL, NL_SUBPROTOCOL } from './spacemouse.js';
 import { initTheme } from './theme.js';
 
 const hdriLocation = "./assets/bg.hdr";
@@ -1258,6 +1259,87 @@ window.resetZoom = function() {
   }, ANIM_ZOOM);
 };
 
+
+// SpaceMouse support: navlib session against the local 3DxNLServer. The
+// driver computes all motion (and handles the built-in Fit/view buttons)
+// from the properties served here; machines without the driver stay dormant.
+(function connectSpaceMouse() {
+  let ws;
+  try {
+    ws = new WebSocket(NL_URL, NL_SUBPROTOCOL);
+  } catch {
+    return;
+  }
+  let registered = false;
+
+  function frustum() {
+    const top = camera.near * Math.tan((camera.fov * Math.PI) / 360);
+    const right = top * camera.aspect;
+    return [-right, right, -top, top, camera.near, camera.far];
+  }
+
+  const session = createSession({
+    send: (s) => ws.send(s),
+    now: Date.now,
+    readProperty: (name) => {
+      switch (name) {
+        case 'view.affine': camera.updateMatrixWorld(); return camera.matrixWorld.toArray();
+        case 'view.perspective': return true;
+        case 'view.fov': return (camera.fov * Math.PI) / 180;
+        case 'view.frustum': return frustum();
+        case 'view.target': return controls.target.toArray();
+        case 'view.rotatable': return true;
+        case 'model.extents': {
+          if (!currentModel) return undefined;
+          const box = new THREE.Box3().setFromObject(currentModel);
+          return [box.min.x, box.min.y, box.min.z, box.max.x, box.max.y, box.max.z];
+        }
+        case 'model.unitsToMeters': return 1;
+        case 'selection.empty': return true;
+        case 'views.front': {
+          const pose = poseFromDirection(Z_FWD, Y_UP);
+          return new THREE.Matrix4()
+            .compose(pose.position, pose.quaternion, new THREE.Vector3(1, 1, 1))
+            .toArray();
+        }
+        case 'coordinateSystem': return new THREE.Matrix4().toArray();
+        case 'hit.lookat': return null;
+        default: return undefined;
+      }
+    },
+    applyUpdate: (name, value) => {
+      switch (name) {
+        case 'view.affine': {
+          cameraAnimation = null;
+          const m = new THREE.Matrix4().fromArray(value);
+          m.decompose(camera.position, camera.quaternion, new THREE.Vector3());
+          camera.updateMatrixWorld();
+          break;
+        }
+        case 'view.target':
+          controls.target.fromArray(value);
+          break;
+        case 'transaction':
+          if (value === 0) requestRender();
+          break;
+        case 'motion':
+          if (value === false) updateURL();
+          break;
+      }
+    },
+    onRegistered: () => {
+      registered = true;
+      console.log('[spacemouse] registered');
+      (function pump() {
+        session.pumpFrame();
+        requestAnimationFrame(pump);
+      })();
+    },
+  });
+
+  ws.onmessage = (ev) => session.onMessage(ev.data);
+  ws.onerror = () => { if (!registered) console.log('[spacemouse] no 3DxNLServer — dormant'); };
+})();
 
 // Initial render — every interactive control invalidates via requestRender()
 // from here on, so this is the only unconditional draw.
