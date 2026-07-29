@@ -99,9 +99,26 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
+.logo {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
 .logo h1 {
   font-size: 1.25rem;
   font-weight: 600;
+  color: var(--accent);
+}
+
+.logo a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.logo a:hover {
   color: var(--accent);
 }
 
