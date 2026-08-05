@@ -1048,6 +1048,7 @@
           "toolhead": "jabberwocky"
         },
         "files": [
+          "Experimental Files/Jabberwocky/README.md",
           "Experimental Files/Jabberwocky/JW_Belt_mounts.stl",
           "Experimental Files/Jabberwocky/JW_carriage_mounts_presupported.stl",
           "Experimental Files/Jabberwocky/JW_front_mount_plate.stl",
